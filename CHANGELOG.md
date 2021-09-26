@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2021-09-26
+
 ### Added
 
-- Settings
-- Modes
+- Settings registers
+- Modes registers
+- Mode sensors and selects
+- English and German translations
+
+[Unreleased]: https://github.com/siku2/hass-komfovent-c5/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/siku2/hass-komfovent-c5/releases/tag/v0.1.0
