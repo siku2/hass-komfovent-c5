@@ -21,6 +21,7 @@ class AhuControl(KomfoventEntity, SwitchEntity):
     def name(self) -> str:
         return f"{super().name} Ahu Control"
 
+    # TODO icon
     @property
     def is_on(self) -> bool:
         return self._modes_state.ahu
