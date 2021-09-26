@@ -13,12 +13,13 @@ from homeassistant.const import (
     CONF_PORT,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
 
-from .api import Client, Modes, ModesState
+from .api import Client, Modes, ModesState, Settings, SettingsState
 from .const import DOMAIN, PLATFORMS
 
 logger = logging.getLogger(__name__)
@@ -31,14 +32,18 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
 
 class KomfoventCoordinator(DataUpdateCoordinator[ModesState]):
     client: Client
+    settings_state: SettingsState
+    host_id: str
 
     async def __fetch_data(self) -> ModesState:
         return await Modes(self.client).read_all()
 
     async def __initalize(self, client: Client, entry: ConfigEntry) -> None:
         self.client = client
-        self.update_method = self.__fetch_data
+        self.settings_state = await Settings(client).read_all()
+        self.host_id = f"{entry.data[CONF_HOST]}:{entry.data[CONF_PORT]}"
 
+        self.update_method = self.__fetch_data
         await self.async_refresh()
 
     @classmethod
@@ -111,17 +116,22 @@ class KomfoventEntity(CoordinatorEntity):
         return self.coordinator.data
 
     @property
+    def name(self) -> str:
+        return self.coordinator.settings_state.ahu_name
+
+    @property
     def device_info(self) -> dict:
-        # TODO
+        settings = self.coordinator.settings_state
         return {
-            ATTR_IDENTIFIERS: {(DOMAIN, "TODO")},
-            ATTR_NAME: "TODO",
+            ATTR_IDENTIFIERS: {(DOMAIN, settings.ahu_serial_number)},
+            ATTR_NAME: settings.ahu_name,
             ATTR_MANUFACTURER: "KOMFOVENT",
-            ATTR_MODEL: "TODO",
+            ATTR_MODEL: "RHP 400 V C5",
+            # TODO read controller firmware version
             ATTR_SW_VERSION: "v1",
         }
 
     @property
     def unique_id(self) -> str:
-        # TODO
-        return f"{DOMAIN}-{type(self).__qualname__}"
+        settings = self.coordinator.settings_state
+        return f"{DOMAIN}-{settings.ahu_serial_number}-{type(self).__qualname__}"

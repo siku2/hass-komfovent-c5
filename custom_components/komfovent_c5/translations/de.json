@@ -1,12 +1,5 @@
 {
   "title": "Komfovent C5",
-  "state": {
-    "_": {
-      "SUPPLY": "Zuluft",
-      "EXTRACT": "Abluft",
-      "ROOM": "Raum"
-    }
-  },
   "config": {
     "step": {
       "user": {

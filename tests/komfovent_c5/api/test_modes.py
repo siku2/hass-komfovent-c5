@@ -1,4 +1,4 @@
-import os
+import asyncio
 
 import pytest
 from komfovent_c5.api import (
@@ -15,15 +15,7 @@ from komfovent_c5.api import (
 pytestmark = pytest.mark.asyncio
 
 
-@pytest.fixture
-async def client() -> Client:
-    client = await Client.connect(
-        os.getenv("TEST_DEVICE_HOSTNAME"), int(os.getenv("TEST_DEVICE_PORT", 502))
-    )
-    yield client
-
-
-async def test_modes(client: Client):
+async def test_individual(client: Client):
     modes = Modes(client)
 
     assert await modes.ahu_on() in (True, False)
@@ -39,7 +31,7 @@ async def test_modes(client: Client):
     assert 0 <= await modes.nominal_exhaust_pressure() <= 4500
 
 
-async def test_mode_registers(client: Client):
+async def test_individual_mode_registers(client: Client):
     modes = Modes(client)
 
     async def check_mode_registers(mode: Mode):
@@ -50,11 +42,13 @@ async def test_mode_registers(client: Client):
         if isinstance(mode, SpecialMode):
             assert await mode.configuration() is not None
 
-    await check_mode_registers(modes.mode_registers(OperationMode.COMFORT1))
-    await check_mode_registers(modes.mode_registers(OperationMode.COMFORT2))
-    await check_mode_registers(modes.mode_registers(OperationMode.ECONOMY1))
-    await check_mode_registers(modes.mode_registers(OperationMode.ECONOMY2))
-    await check_mode_registers(modes.mode_registers(OperationMode.SPECIAL))
+    await asyncio.gather(
+        check_mode_registers(modes.mode_registers(OperationMode.COMFORT1)),
+        check_mode_registers(modes.mode_registers(OperationMode.COMFORT2)),
+        check_mode_registers(modes.mode_registers(OperationMode.ECONOMY1)),
+        check_mode_registers(modes.mode_registers(OperationMode.ECONOMY2)),
+        check_mode_registers(modes.mode_registers(OperationMode.SPECIAL)),
+    )
 
 
 async def test_read_all(client: Client):

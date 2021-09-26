@@ -1,4 +1,6 @@
 import asyncio
+import itertools
+from ipaddress import IPv4Address
 from typing import Iterator, List, Tuple
 
 from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTcpClient
@@ -20,7 +22,9 @@ class Client:
         )
         await asyncio.wait_for(modbus_client.start(host, port), timeout=connect_timeout)
 
-        modbus_client.protocol._timeout = 20.0
+        #  TODO this needs to be done on every reconnect!
+        if modbus_client.protocol:
+            modbus_client.protocol._timeout = 20.0
 
         inst = cls()
         inst._modbus = modbus_client
@@ -85,7 +89,7 @@ def consume_u16_from_registers(registers: Iterator[int]) -> int:
 
 
 def consume_u8_couple_from_register(register: int) -> Tuple[int, int]:
-    return register & 0x00FF, register & 0xFF00
+    return (register & 0xFF00) >> 8, register & 0x00FF
 
 
 def consume_u8_couple_from_registers(registers: Iterator[int]) -> Tuple[int, int]:
@@ -96,3 +100,19 @@ def consume_u8_couple_from_registers(registers: Iterator[int]) -> Tuple[int, int
 def consume_u32_from_registers(registers: Iterator[int]) -> int:
     hi, lo = next(registers), next(registers)
     return ((hi << 16) & 0xFFFF0000) | lo & 0x0000FFFF
+
+
+def consume_string_from_registers(registers: Iterator[int], length: int) -> str:
+    # preemtively consume all bytes since we need to consume `length` registers
+    raw = [
+        b for _ in range(length) for b in consume_u8_couple_from_registers(registers)
+    ]
+    # create a string from the bytes until the first NULL
+    return "".join(map(chr, itertools.takewhile(lambda b: b != 0, raw)))
+
+
+def consume_ip_address_from_registers(
+    registers: Iterator[int],
+) -> IPv4Address:
+    raw = consume_u32_from_registers(registers)
+    return IPv4Address(raw)

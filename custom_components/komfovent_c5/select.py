@@ -25,8 +25,12 @@ class OpModeSelect(KomfoventEntity, SelectEntity):
         return f"{super().name} Operation Mode"
 
     @property
+    def device_class(self) -> str:
+        return f"{DOMAIN}__operation_mode"
+
+    @property
     def current_option(self) -> str:
-        return self._modes_state.operaiton_mode.name
+        return self._modes_state.operation_mode.name
 
     @property
     def options(self) -> List[str]:
@@ -41,6 +45,10 @@ class FlowControlModeSelect(KomfoventEntity, SelectEntity):
     @property
     def name(self) -> str:
         return f"{super().name} Flow Control Mode"
+
+    @property
+    def device_class(self) -> str:
+        return f"{DOMAIN}__flow_control_mode"
 
     @property
     def current_option(self) -> str:
@@ -59,6 +67,10 @@ class TempControlModeSelect(KomfoventEntity, SelectEntity):
     @property
     def name(self) -> str:
         return f"{super().name} Temperature Control Mode"
+
+    @property
+    def device_class(self) -> str:
+        return f"{DOMAIN}__temperature_control_mode"
 
     @property
     def current_option(self) -> str:

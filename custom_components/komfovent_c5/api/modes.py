@@ -148,7 +148,7 @@ class SpecialMode(Mode):
 @dataclasses.dataclass()
 class ModesState:
     ahu: bool
-    operaiton_mode: OperationMode
+    operation_mode: OperationMode
     flow_control_mode: FlowControlMode
     temperature_control_mode: TemperatureControlMode
     vav_status: VavStatus
@@ -160,7 +160,7 @@ class ModesState:
 
     @classmethod
     def _consume_from_registers(cls, ahu: bool, registers: Iterator[int]):
-        operaiton_mode = OperationMode(consume_u16_from_registers(registers))
+        operation_mode = OperationMode(consume_u16_from_registers(registers))
         modes = {
             OperationMode.COMFORT1: ModeState._consume_from_registers(registers, False),
             OperationMode.COMFORT2: ModeState._consume_from_registers(registers, False),
@@ -171,7 +171,7 @@ class ModesState:
 
         return cls(
             ahu=ahu,
-            operaiton_mode=operaiton_mode,
+            operation_mode=operation_mode,
             modes=modes,
             flow_control_mode=FlowControlMode(consume_u16_from_registers(registers)),
             temperature_control_mode=TemperatureControlMode(
@@ -182,6 +182,10 @@ class ModesState:
             nominal_supply_pressure=consume_u16_from_registers(registers),
             nominal_exhaust_pressure=consume_u16_from_registers(registers),
         )
+
+    @property
+    def active_mode(self) -> ModeState:
+        return self.modes[self.operation_mode]
 
 
 class Modes:

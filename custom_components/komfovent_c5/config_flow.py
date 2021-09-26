@@ -23,9 +23,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             port: int = info[CONF_PORT]
 
             try:
-                _ = await Client.connect(host, port, connect_timeout=5.0)
+                client = await Client.connect(host, port, connect_timeout=10.0)
             except asyncio.TimeoutError:
                 errors[CONF_BASE] = ERR_CONNECT_FAILED
+            else:
+                await client.disconnect()
 
             if not errors:
                 return self.async_create_entry(title=host, data=info)

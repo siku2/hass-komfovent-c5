@@ -1,0 +1,22 @@
+{
+  "state": {
+    "komfovent_c5__operation_mode": {
+      "COMFORT1": "Komfort 1",
+      "COMFORT2": "Komfort 2",
+      "ECONOMY1": "Sparsam 1",
+      "ECONOMY2": "Sparsam 2",
+      "SPECIAL": "Spezial",
+      "PROGRAM": "Programm"
+    },
+    "komfovent_c5__flow_control_mode": {
+      "CAV": "Konstantes Luftvolumen ",
+      "VAV": "Variables Luftvolumen",
+      "DCV": "Bedarfsgesteuerte Lüftung"
+    },
+    "komfovent_c5__temperature_control_mode": {
+      "SUPPLY": "Zuluft",
+      "EXTRACT": "Abluft",
+      "ROOM": "Raum"
+    }
+  }
+}
