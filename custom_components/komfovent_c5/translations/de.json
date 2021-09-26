@@ -1,0 +1,24 @@
+{
+  "title": "Komfovent C5",
+  "state": {
+    "_": {
+      "SUPPLY": "Zuluft",
+      "EXTRACT": "Abluft",
+      "ROOM": "Raum"
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit Komfovent verbinden",
+        "data": {
+          "host": "Host (oder IP)",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "connect_failed": "Verbindung fehlgeschlagen"
+    }
+  }
+}

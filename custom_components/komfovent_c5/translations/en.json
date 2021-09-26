@@ -1,0 +1,17 @@
+{
+  "title": "Komfovent C5",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Komfovent",
+        "data": {
+          "host": "Host (or IP)",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "connect_failed": "Failed to connect"
+    }
+  }
+}
