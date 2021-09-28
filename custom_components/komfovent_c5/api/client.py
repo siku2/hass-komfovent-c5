@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import itertools
 from ipaddress import IPv4Address
 from typing import Iterator, List, Tuple
@@ -52,7 +53,7 @@ class Client:
 
     async def read_u8_couple(self, address: int) -> Tuple[int, int]:
         value = await self.read_u16(address)
-        return consume_u8_couple_from_register(value)
+        return consume_u8_couple_from_u16(value)
 
     async def write_u8_couple(self, address: int, lo: int, hi: int) -> None:
         value = ((hi << 8) & 0xFF00) | (lo & 0x00FF)
@@ -64,7 +65,7 @@ class Client:
                 await self._modbus.protocol.read_holding_registers(address, count=2)
             )
         assert not rr.isError()
-        return consume_u32_from_registers(iter(rr.registers))
+        return consume_u32(iter(rr.registers))
 
     async def write_u32(self, address: int, value: int) -> None:
         lo = value & 0x0000FFFF
@@ -84,35 +85,47 @@ class Client:
         return rr.registers
 
 
-def consume_u16_from_registers(registers: Iterator[int]) -> int:
+def consume_u16(registers: Iterator[int]) -> int:
     return next(registers)
 
 
-def consume_u8_couple_from_register(register: int) -> Tuple[int, int]:
+def consume_u8_couple_from_u16(register: int) -> Tuple[int, int]:
     return (register & 0xFF00) >> 8, register & 0x00FF
 
 
-def consume_u8_couple_from_registers(registers: Iterator[int]) -> Tuple[int, int]:
+def consume_u8_couple(registers: Iterator[int]) -> Tuple[int, int]:
     value = next(registers)
-    return consume_u8_couple_from_register(value)
+    return consume_u8_couple_from_u16(value)
 
 
-def consume_u32_from_registers(registers: Iterator[int]) -> int:
+def consume_u32(registers: Iterator[int]) -> int:
     hi, lo = next(registers), next(registers)
     return ((hi << 16) & 0xFFFF0000) | lo & 0x0000FFFF
 
 
-def consume_string_from_registers(registers: Iterator[int], length: int) -> str:
+def consume_string(registers: Iterator[int], length: int) -> str:
     # preemtively consume all bytes since we need to consume `length` registers
-    raw = [
-        b for _ in range(length) for b in consume_u8_couple_from_registers(registers)
-    ]
+    raw = [b for _ in range(length) for b in consume_u8_couple(registers)]
     # create a string from the bytes until the first NULL
     return "".join(map(chr, itertools.takewhile(lambda b: b != 0, raw)))
 
 
-def consume_ip_address_from_registers(
+def consume_ip_address(
     registers: Iterator[int],
 ) -> IPv4Address:
-    raw = consume_u32_from_registers(registers)
+    raw = consume_u32(registers)
     return IPv4Address(raw)
+
+
+def consume_time(registers: Iterator[int], *, read_seconds: bool) -> datetime.time:
+    hour, minute = consume_u8_couple(registers)
+    second = 0
+    if read_seconds:
+        second = consume_u16(registers)
+    return datetime.time(hour=hour, minute=minute, second=second)
+
+
+def consume_date(registers: Iterator[int]) -> datetime.date:
+    month, day = consume_u8_couple(registers)
+    year = consume_u16(registers)
+    return datetime.date(year=year, month=month, day=day)

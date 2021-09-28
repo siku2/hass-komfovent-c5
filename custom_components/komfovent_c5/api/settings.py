@@ -1,14 +1,17 @@
 import dataclasses
 import enum
+from datetime import datetime
 from ipaddress import IPv4Address
 from typing import Iterator
 
 from .client import (
     Client,
-    consume_ip_address_from_registers,
-    consume_string_from_registers,
-    consume_u16_from_registers,
-    consume_u32_from_registers,
+    consume_date,
+    consume_ip_address,
+    consume_string,
+    consume_time,
+    consume_u16,
+    consume_u32,
 )
 
 __all__ = [
@@ -25,8 +28,8 @@ class FlowUnits(enum.IntEnum):
     PASCAL = 3
 
     @classmethod
-    def _consume_from_registers(cls, registers: Iterator[int]):
-        return FlowUnits(consume_u16_from_registers(registers))
+    def _consume(cls, registers: Iterator[int]):
+        return cls(consume_u16(registers))
 
     def unit_symbol(self) -> str:
         return _FLOW_UNIT_TO_SYMBOL[self]
@@ -49,8 +52,8 @@ class Rs485:
     stop_bits: int
 
     @classmethod
-    def _consume_from_registers(cls, registers: Iterator[int]):
-        raw = consume_u16_from_registers(registers)
+    def _consume(cls, registers: Iterator[int]):
+        raw = consume_u16(registers)
         raw_stop_bits = raw & 0b0_0001
         raw_parity = (raw & 0b0_0010) >> 1
         raw_speed = (raw & 0b1_1000) >> 3
@@ -61,8 +64,22 @@ class Rs485:
         )
 
 
+class Language(enum.IntEnum):
+    ENGLISH = 0
+    LITHUANIAN = 1
+    RUSSIAN = 2
+    POLISH = 3
+
+    @classmethod
+    def _consume(cls, registers: Iterator[int]):
+        return cls(consume_u16(registers))
+
+
 @dataclasses.dataclass()
 class SettingsState:
+    datetime: datetime
+    language: Language
+    modbus_address: int
     ip_address: IPv4Address
     flow_units: FlowUnits
     ahu_serial_number: str
@@ -74,20 +91,29 @@ class SettingsState:
     bacnet_id: int
 
     @classmethod
-    def _consume_from_registers(cls, registers: Iterator[int]):
-        ip_address = consume_ip_address_from_registers(registers)
-        flow_units = FlowUnits._consume_from_registers(registers)
-        ahu_serial_number = consume_string_from_registers(registers, 8)
-        ahu_name = consume_string_from_registers(registers, 12)
-        ip_mask = consume_ip_address_from_registers(registers)
-        rs_485 = Rs485._consume_from_registers(registers)
-        daylight_saving_time = bool(consume_u16_from_registers(registers))
+    def _consume(cls, registers: Iterator[int]):
+        time = consume_time(registers, read_seconds=True)
+        # reg 451 is the day of week, which we don't need
+        _ = consume_u16(registers)
+        date = consume_date(registers)
+        language = Language._consume(registers)
+        modbus_address = consume_u16(registers)
+        ip_address = consume_ip_address(registers)
+        flow_units = FlowUnits._consume(registers)
+        ahu_serial_number = consume_string(registers, 8)
+        ahu_name = consume_string(registers, 12)
+        ip_mask = consume_ip_address(registers)
+        rs_485 = Rs485._consume(registers)
+        daylight_saving_time = bool(consume_u16(registers))
         # reg 483 isn't documented, skip
-        _ = consume_u16_from_registers(registers)
-        bacnet_port = consume_u16_from_registers(registers)
-        bacnet_id = consume_u32_from_registers(registers)
+        _ = consume_u16(registers)
+        bacnet_port = consume_u16(registers)
+        bacnet_id = consume_u32(registers)
 
         return cls(
+            datetime=datetime.combine(date, time),
+            language=language,
+            modbus_address=modbus_address,
             ip_address=ip_address,
             flow_units=flow_units,
             ahu_serial_number=ahu_serial_number,
@@ -101,7 +127,13 @@ class SettingsState:
 
 
 class Settings:
-    # TODO missing the first half!
+    REG_TIME = 449
+    REG_SECONDS = 450
+    REG_DAY_OF_WEEK = 451
+    REG_DATE = 452
+    REG_YEAR = 453
+    REG_LANGUAGE = 454
+    REG_MODBUS_ADDRESS = 455
     REG_IP_ADDRESS = 456
     REG_FLOW_UNITS = 458
     REG_AHU_SN = 459
@@ -119,10 +151,10 @@ class Settings:
 
     async def read_all(self) -> SettingsState:
         registers = await self._client.read_many_u16(
-            self.REG_IP_ADDRESS,
-            ((self.REG_BACNET_ID + 1) - self.REG_IP_ADDRESS) + 1,
+            self.REG_TIME,
+            ((self.REG_BACNET_ID + 1) - self.REG_TIME) + 1,
         )
-        return SettingsState._consume_from_registers(iter(registers))
+        return SettingsState._consume(iter(registers))
 
 
 _FLOW_UNIT_TO_SYMBOL = {
