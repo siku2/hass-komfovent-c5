@@ -1,4 +1,5 @@
 import asyncio
+import ctypes
 import datetime
 import itertools
 from ipaddress import IPv4Address
@@ -86,7 +87,15 @@ class Client:
 
 
 def consume_u16(registers: Iterator[int]) -> int:
-    return next(registers)
+    try:
+        return next(registers)
+    except StopIteration:
+        raise ValueError("missing register to consume u16") from None
+
+
+def consume_i16(registers: Iterator[int]) -> int:
+    raw = consume_u16(registers)
+    return ctypes.c_int16(raw).value
 
 
 def consume_u8_couple_from_u16(register: int) -> Tuple[int, int]:
@@ -94,12 +103,15 @@ def consume_u8_couple_from_u16(register: int) -> Tuple[int, int]:
 
 
 def consume_u8_couple(registers: Iterator[int]) -> Tuple[int, int]:
-    value = next(registers)
+    value = consume_u16(registers)
     return consume_u8_couple_from_u16(value)
 
 
 def consume_u32(registers: Iterator[int]) -> int:
-    hi, lo = next(registers), next(registers)
+    try:
+        hi, lo = next(registers), next(registers)
+    except StopIteration:
+        raise ValueError("missing register(s) to consume u32") from None
     return ((hi << 16) & 0xFFFF0000) | lo & 0x0000FFFF
 
 

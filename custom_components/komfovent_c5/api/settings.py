@@ -34,6 +34,12 @@ class FlowUnits(enum.IntEnum):
     def unit_symbol(self) -> str:
         return _FLOW_UNIT_TO_SYMBOL[self]
 
+    def _common_factor(self) -> float:
+        if self == self.CUBIC_METER_PER_SECOND:
+            return 1e-3
+
+        return 1.0
+
 
 @dataclasses.dataclass()
 class Rs485:
