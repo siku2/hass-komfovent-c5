@@ -45,10 +45,10 @@ class KomfoventState:
     monitoring: MonitoringState
 
     @classmethod
-    async def read_all(cls, client: Client):
+    async def read_all(cls, client: Client, settings: SettingsState):
         return cls(
             modes=await Modes(client).read_all(),
-            monitoring=await Monitoring(client).read_all(),
+            monitoring=await Monitoring(client).read_all(units=settings.flow_units),
         )
 
 
@@ -58,7 +58,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
     host_id: str
 
     async def __fetch_data(self) -> KomfoventState:
-        return await KomfoventState.read_all(self.client)
+        return await KomfoventState.read_all(self.client, self.settings_state)
 
     async def __initalize(self, client: Client, entry: ConfigEntry) -> None:
         self.client = client

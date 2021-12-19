@@ -125,7 +125,7 @@ class MonitoringState:
     air_heater_operation_kwh: int
 
     @classmethod
-    def _consume(cls, registers: Iterator[int], units: FlowUnits):
+    def _consume(cls, registers: Iterator[int], *, units: FlowUnits):
         # reg: 2000
         c5_status = C5Status._consume(registers)
         mode = OperationMode._consume(registers)
@@ -274,7 +274,7 @@ class Monitoring:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def read_all(self) -> MonitoringState:
+    async def read_all(self, *, units: FlowUnits) -> MonitoringState:
         regs1 = await self._client.read_many_u16(
             self.REG_C5_STATUS,
             (self.REG_INTERNAL_SUPPLY_TEMP - self.REG_C5_STATUS) + 1,
@@ -287,4 +287,4 @@ class Monitoring:
             )
             + 1,
         )
-        return MonitoringState._consume(itertools.chain(regs1, regs2))
+        return MonitoringState._consume(itertools.chain(regs1, regs2), units=units)
