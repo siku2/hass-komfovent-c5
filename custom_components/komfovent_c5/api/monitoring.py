@@ -82,18 +82,18 @@ class MonitoringState:
     # TODO use ABC class for this combined with above type
     air_quality_level: int
     supply_air_humidity: float
-    water_heater_level: int
-    water_cooler_level: int
-    humidity_control_level: int
-    heat_exchanger_level: int
-    recirculation_level: int
-    supply_fan_level: int
-    exhaust_fan_level: int
-    outdoor_air_damper_actuator_level: int
-    exhaust_air_damper_actuator_level: int
-    electric_heater_level: int
-    heat_pump_level: int
-    dx_level: int
+    water_heater_level: float
+    water_cooler_level: float
+    humidity_control_level: float
+    heat_exchanger_level: float
+    recirculation_level: float
+    supply_fan_level: float
+    exhaust_fan_level: float
+    outdoor_air_damper_actuator_level: float
+    exhaust_air_damper_actuator_level: float
+    electric_heater_level: float
+    heat_pump_level: float
+    dx_level: float
     ovr_input: bool
     fire_system_input: bool
     external_stop_input: bool
@@ -144,19 +144,19 @@ class MonitoringState:
         air_quality_sensor_type = AirQualitySensorType._consume(registers)
         air_quality_level = consume_u16(registers)
         supply_air_humidity = consume_u16(registers) / 10.0
-        water_heater_level = consume_u16(registers)
-        water_cooler_level = consume_u16(registers)
-        humidity_control_level = consume_u16(registers)
-        heat_exchanger_level = consume_u16(registers)
+        water_heater_level = consume_u16(registers) / 10.0
+        water_cooler_level = consume_u16(registers) / 10.0
+        humidity_control_level = consume_u16(registers) / 10.0
+        heat_exchanger_level = consume_u16(registers) / 10.0
         # reg: 2020
-        recirculation_level = consume_u16(registers)
-        supply_fan_level = consume_u16(registers)
-        exhaust_fan_level = consume_u16(registers)
-        outdoor_air_damper_actuator_level = consume_u16(registers)
-        exhaust_air_damper_actuator_level = consume_u16(registers)
-        electric_heater_level = consume_u16(registers)
-        heat_pump_level = consume_i16(registers)
-        dx_level = consume_i16(registers)
+        recirculation_level = consume_u16(registers) / 10.0
+        supply_fan_level = consume_u16(registers) / 10.0
+        exhaust_fan_level = consume_u16(registers) / 10.0
+        outdoor_air_damper_actuator_level = consume_u16(registers) / 10.0
+        exhaust_air_damper_actuator_level = consume_u16(registers) / 10.0
+        electric_heater_level = consume_u16(registers) / 10.0
+        heat_pump_level = consume_i16(registers) / 10.0
+        dx_level = consume_i16(registers) / 10.0
         ovr_input = bool(consume_u16(registers))
         fire_system_input = bool(consume_u16(registers))
         # reg: 2030

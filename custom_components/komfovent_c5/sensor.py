@@ -1,8 +1,9 @@
-from homeassistant.components.sensor import STATE_CLASS_MEASUREMENT, SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     DEVICE_CLASS_PRESSURE,
     DEVICE_CLASS_TEMPERATURE,
+    PERCENTAGE,
     PRESSURE_PA,
     TEMP_CELSIUS,
 )
@@ -57,6 +58,44 @@ async def async_setup_entry(
     return True
 
 
+class FlowMetaSensor(KomfoventEntity, SensorEntity):
+    @property
+    def icon(self) -> str:
+        return "mdi:air-filter"
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return self.coordinator.settings_state.flow_units.unit_symbol()
+
+    @property
+    def state_class(self) -> str:
+        return SensorStateClass.MEASUREMENT
+
+
+class PercentageMetaSensor(KomfoventEntity, SensorEntity):
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return PERCENTAGE
+
+    @property
+    def state_class(self) -> str:
+        return SensorStateClass.MEASUREMENT
+
+
+class TemperatureMetaSensor(KomfoventEntity, SensorEntity):
+    @property
+    def device_class(self) -> str:
+        return DEVICE_CLASS_TEMPERATURE
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return TEMP_CELSIUS
+
+    @property
+    def state_class(self) -> str:
+        return SensorStateClass.MEASUREMENT
+
+
 class VavSensorsRange(KomfoventEntity, SensorEntity):
     @property
     def name(self) -> str:
@@ -76,7 +115,7 @@ class VavSensorsRange(KomfoventEntity, SensorEntity):
 
     @property
     def state_class(self) -> str:
-        return STATE_CLASS_MEASUREMENT
+        return SensorStateClass.MEASUREMENT
 
 
 class NominalSupplyPressure(KomfoventEntity, SensorEntity):
@@ -98,7 +137,7 @@ class NominalSupplyPressure(KomfoventEntity, SensorEntity):
 
     @property
     def state_class(self) -> str:
-        return STATE_CLASS_MEASUREMENT
+        return SensorStateClass.MEASUREMENT
 
 
 class NominalExhaustPressure(KomfoventEntity, SensorEntity):
@@ -120,24 +159,10 @@ class NominalExhaustPressure(KomfoventEntity, SensorEntity):
 
     @property
     def state_class(self) -> str:
-        return STATE_CLASS_MEASUREMENT
+        return SensorStateClass.MEASUREMENT
 
 
-class FlowSensor(KomfoventEntity, SensorEntity):
-    @property
-    def icon(self) -> str:
-        return "mdi:air-filter"
-
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return self.coordinator.settings_state.flow_units.unit_symbol()
-
-    @property
-    def state_class(self) -> str:
-        return STATE_CLASS_MEASUREMENT
-
-
-class ActiveModeSupplyFlow(FlowSensor):
+class ActiveModeSupplyFlow(FlowMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Active Mode Supply Flow"
@@ -147,7 +172,7 @@ class ActiveModeSupplyFlow(FlowSensor):
         return self._modes_state.active_mode.supply_flow
 
 
-class ActiveModeExtractFlow(FlowSensor):
+class ActiveModeExtractFlow(FlowMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Active Mode Extract Flow"
@@ -157,21 +182,7 @@ class ActiveModeExtractFlow(FlowSensor):
         return self._modes_state.active_mode.extract_flow
 
 
-class TemperatureSensor(KomfoventEntity, SensorEntity):
-    @property
-    def device_class(self) -> str:
-        return DEVICE_CLASS_TEMPERATURE
-
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return TEMP_CELSIUS
-
-    @property
-    def state_class(self) -> str:
-        return STATE_CLASS_MEASUREMENT
-
-
-class ActiveModeTemperatureSetpoint(TemperatureSensor):
+class ActiveModeTemperatureSetpoint(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Active Mode Temperature Setpoint"
@@ -184,7 +195,7 @@ class ActiveModeTemperatureSetpoint(TemperatureSensor):
 # The following sensors are all modeled after the diagram shown on page 3 of the MODBUS_C5_manual_EN.pdf manual.
 
 # Extract airflow
-class ExtractAirflowSetpoint(FlowSensor):
+class ExtractAirflowSetpoint(FlowMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Extract airflow Setpoint"
@@ -194,7 +205,7 @@ class ExtractAirflowSetpoint(FlowSensor):
         return self._monitoring_state.extract_flow_setpoint
 
 
-class ExtractAirflowActual(FlowSensor):
+class ExtractAirflowActual(FlowMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Extract airflow Actual"
@@ -204,7 +215,7 @@ class ExtractAirflowActual(FlowSensor):
         return self._monitoring_state.exhaust_flow
 
 
-class ExtractAirflowFanLevel(KomfoventEntity, SensorEntity):
+class ExtractAirflowFanLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Extract airflow Fan level"
@@ -215,7 +226,7 @@ class ExtractAirflowFanLevel(KomfoventEntity, SensorEntity):
 
 
 # Exhaust temperature
-class ExhaustTemperature(TemperatureSensor):
+class ExhaustTemperature(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Exhaust temperature"
@@ -226,7 +237,7 @@ class ExhaustTemperature(TemperatureSensor):
 
 
 # Extract temperature
-class ExtractTemperatureSetpoint(TemperatureSensor):
+class ExtractTemperatureSetpoint(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Extract temperature Setpoint"
@@ -236,7 +247,7 @@ class ExtractTemperatureSetpoint(TemperatureSensor):
         return self._monitoring_state.temp_setpoint
 
 
-class ExtractTemperatureActual(TemperatureSensor):
+class ExtractTemperatureActual(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Extract temperature Actual"
@@ -249,7 +260,7 @@ class ExtractTemperatureActual(TemperatureSensor):
 # Supply temperature
 
 
-class SupplyTemperatureSetpoint(TemperatureSensor):
+class SupplyTemperatureSetpoint(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Supply temperature Setpoint"
@@ -259,7 +270,7 @@ class SupplyTemperatureSetpoint(TemperatureSensor):
         return self._monitoring_state.supply_air_temp_setpoint
 
 
-class SupplyTemperatureActual(TemperatureSensor):
+class SupplyTemperatureActual(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Supply temperature Actual"
@@ -270,7 +281,7 @@ class SupplyTemperatureActual(TemperatureSensor):
 
 
 # Outdoot temperature
-class OutdoorTemperature(TemperatureSensor):
+class OutdoorTemperature(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Outdoor temperature"
@@ -281,7 +292,7 @@ class OutdoorTemperature(TemperatureSensor):
 
 
 # Heat exchanger
-class HeatExchangerLevel(KomfoventEntity, SensorEntity):
+class HeatExchangerLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Heat exchanger Level"
@@ -291,8 +302,7 @@ class HeatExchangerLevel(KomfoventEntity, SensorEntity):
         return self._monitoring_state.heat_exchanger_level
 
 
-# TODO this should have a percentage unit and stuff
-class HeatExchangerEfficiency(KomfoventEntity, SensorEntity):
+class HeatExchangerEfficiency(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Heat exchanger Efficiency"
@@ -303,7 +313,7 @@ class HeatExchangerEfficiency(KomfoventEntity, SensorEntity):
 
 
 # Internal supply temperature
-class InternalSupplyTemperature(TemperatureSensor):
+class InternalSupplyTemperature(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Internal supply temperature"
@@ -314,7 +324,7 @@ class InternalSupplyTemperature(TemperatureSensor):
 
 
 # Supply airflow
-class SupplyAirflowSetpoint(FlowSensor):
+class SupplyAirflowSetpoint(FlowMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Supply airflow Setpoint"
@@ -324,7 +334,7 @@ class SupplyAirflowSetpoint(FlowSensor):
         return self._monitoring_state.supply_flow_setpoint
 
 
-class SupplyAirflowActual(FlowSensor):
+class SupplyAirflowActual(FlowMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Supply airflow Actual"
@@ -334,7 +344,7 @@ class SupplyAirflowActual(FlowSensor):
         return self._monitoring_state.supply_flow
 
 
-class SupplyAirflowFanLevel(KomfoventEntity, SensorEntity):
+class SupplyAirflowFanLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Supply airflow Fan level"
@@ -345,7 +355,7 @@ class SupplyAirflowFanLevel(KomfoventEntity, SensorEntity):
 
 
 # Return water temperature
-class ReturnWaterTemperature(TemperatureSensor):
+class ReturnWaterTemperature(TemperatureMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Return water temperature"
@@ -356,7 +366,7 @@ class ReturnWaterTemperature(TemperatureSensor):
 
 
 # Air heaters/coolers
-class ElectricalHeaterLevel(KomfoventEntity, SensorEntity):
+class ElectricalHeaterLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Electrical heater Level"
@@ -366,7 +376,7 @@ class ElectricalHeaterLevel(KomfoventEntity, SensorEntity):
         return self._monitoring_state.electric_heater_level
 
 
-class WaterHeaterLevel(KomfoventEntity, SensorEntity):
+class WaterHeaterLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Water heater Level"
@@ -376,7 +386,7 @@ class WaterHeaterLevel(KomfoventEntity, SensorEntity):
         return self._monitoring_state.water_heater_level
 
 
-class DxLevel(KomfoventEntity, SensorEntity):
+class DxLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} DX level"
@@ -386,7 +396,7 @@ class DxLevel(KomfoventEntity, SensorEntity):
         return self._monitoring_state.dx_level
 
 
-class HeatpumpLevel(KomfoventEntity, SensorEntity):
+class HeatpumpLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Heat-pump level"
@@ -396,7 +406,7 @@ class HeatpumpLevel(KomfoventEntity, SensorEntity):
         return self._monitoring_state.heat_pump_level
 
 
-class WaterCoolerLevel(KomfoventEntity, SensorEntity):
+class WaterCoolerLevel(PercentageMetaSensor):
     @property
     def name(self) -> str:
         return f"{super().name} Water cooler Level"

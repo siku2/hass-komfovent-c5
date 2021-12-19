@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- A few "level" sensors are undocumented deci percentages. Normalized to percentages with one decimal point.
+
 ## [0.2.0] - 2021-12-19
 
 ### Added
