@@ -1,4 +1,5 @@
 import asyncio
+import dataclasses
 import logging
 from datetime import timedelta
 
@@ -18,7 +19,16 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .api import Client, Modes, ModesState, Settings, SettingsState
+from .api import (
+    Client,
+    Modes,
+    ModesState,
+    ModeState,
+    Monitoring,
+    MonitoringState,
+    Settings,
+    SettingsState,
+)
 from .const import DOMAIN, PLATFORMS
 
 logger = logging.getLogger(__name__)
@@ -29,13 +39,26 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
     return True
 
 
-class KomfoventCoordinator(DataUpdateCoordinator[ModesState]):
+@dataclasses.dataclass()
+class KomfoventState:
+    modes: ModeState
+    monitoring: MonitoringState
+
+    @classmethod
+    async def read_all(cls, client: Client):
+        return cls(
+            modes=await Modes(client).read_all(),
+            monitoring=await Monitoring(client).read_all(),
+        )
+
+
+class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
     client: Client
     settings_state: SettingsState
     host_id: str
 
-    async def __fetch_data(self) -> ModesState:
-        return await Modes(self.client).read_all()
+    async def __fetch_data(self) -> KomfoventState:
+        return await KomfoventState.read_all(self.client)
 
     async def __initalize(self, client: Client, entry: ConfigEntry) -> None:
         self.client = client
@@ -112,7 +135,11 @@ class KomfoventEntity(CoordinatorEntity):
 
     @property
     def _modes_state(self) -> ModesState:
-        return self.coordinator.data
+        return self.coordinator.data.modes
+
+    @property
+    def _monitoring_state(self) -> MonitoringState:
+        return self.coordinator.data.monitoring
 
     @property
     def name(self) -> str:
@@ -126,7 +153,7 @@ class KomfoventEntity(CoordinatorEntity):
             ATTR_NAME: settings.ahu_name,
             ATTR_MANUFACTURER: "KOMFOVENT",
             ATTR_MODEL: "RHP 400 V C5",
-            # TODO read controller firmware version
+            # TODO read controller firmware version from service regs
             ATTR_SW_VERSION: "v1",
         }
 
