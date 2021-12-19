@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-12-19
+
 ### Added
 
 - Added installation instructions to the README
@@ -22,5 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mode sensors and selects
 - English and German translations
 
-[Unreleased]: https://github.com/siku2/hass-komfovent-c5/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/siku2/hass-komfovent-c5/releases/tag/v0.1.0
+[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.0...main
+[0.2.0]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.0
+[0.1.0]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.1.0
