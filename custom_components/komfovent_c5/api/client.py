@@ -5,7 +5,10 @@ import itertools
 from ipaddress import IPv4Address
 from typing import Iterator, List, Tuple
 
-from pymodbus.client.asynchronous.async_io import ReconnectingAsyncioModbusTcpClient
+from pymodbus.client.asynchronous.async_io import (
+    ModbusClientProtocol,
+    ReconnectingAsyncioModbusTcpClient,
+)
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
 from pymodbus.register_write_message import (
     WriteMultipleRegistersResponse,
@@ -24,14 +27,20 @@ class Client:
         )
         await asyncio.wait_for(modbus_client.start(host, port), timeout=connect_timeout)
 
-        #  TODO this needs to be done on every reconnect!
-        if modbus_client.protocol:
-            modbus_client.protocol._timeout = 20.0
-
         inst = cls()
         inst._modbus = modbus_client
         inst._lock = asyncio.Lock()
         return inst
+
+    async def _protocol(self) -> ModbusClientProtocol:
+        modbus = self._modbus
+        if modbus.protocol is None or not modbus.connected:
+            # let's try to connect manually and see what's going on
+            # TODO: let's just patch the connection_made method of self._modbus so that we know when the connection is established and use that to resume here
+            await modbus.loop.create_connection(
+                modbus._create_protocol, modbus.host, modbus.port
+            )
+        return modbus.protocol
 
     async def disconnect(self) -> None:
         async with self._lock:
@@ -39,16 +48,18 @@ class Client:
 
     async def read_u16(self, address: int) -> int:
         async with self._lock:
-            rr: ReadHoldingRegistersResponse = (
-                await self._modbus.protocol.read_holding_registers(address, count=1)
+            protocol = await self._protocol()
+            rr: ReadHoldingRegistersResponse = await protocol.read_holding_registers(
+                address, count=1
             )
         assert not rr.isError()
         return rr.registers[0]
 
     async def write_u16(self, address: int, value: int) -> None:
         async with self._lock:
-            wr: WriteSingleRegisterResponse = (
-                await self._modbus.protocol.write_register(address, value & 0xFFFF)
+            protocol = await self._protocol()
+            wr: WriteSingleRegisterResponse = await protocol.write_register(
+                address, value & 0xFFFF
             )
         assert not wr.isError()
 
@@ -62,8 +73,9 @@ class Client:
 
     async def read_u32(self, address: int) -> int:
         async with self._lock:
-            rr: ReadHoldingRegistersResponse = (
-                await self._modbus.protocol.read_holding_registers(address, count=2)
+            protocol = await self._protocol()
+            rr: ReadHoldingRegistersResponse = await protocol.read_holding_registers(
+                address, count=2
             )
         assert not rr.isError()
         return consume_u32(iter(rr.registers))
@@ -72,15 +84,17 @@ class Client:
         lo = value & 0x0000FFFF
         hi = (value & 0xFFFF0000) >> 16
         async with self._lock:
-            wr: WriteMultipleRegistersResponse = (
-                await self._modbus.protocol.write_registers(address, (hi, lo))
+            protocol = await self._protocol()
+            wr: WriteMultipleRegistersResponse = await protocol.write_registers(
+                address, (hi, lo)
             )
         assert not wr.isError()
 
     async def read_many_u16(self, address: int, count: int) -> List[int]:
         async with self._lock:
-            rr: ReadHoldingRegistersResponse = (
-                await self._modbus.protocol.read_holding_registers(address, count=count)
+            protocol = await self._protocol()
+            rr: ReadHoldingRegistersResponse = await protocol.read_holding_registers(
+                address, count=count
             )
         assert not rr.isError()
         return rr.registers
