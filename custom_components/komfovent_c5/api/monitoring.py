@@ -105,7 +105,6 @@ class MonitoringState:
     supply_flow_setpoint: float
     extract_flow_setpoint: float
     internal_supply_temp: float
-    internal_supply_temp: float
     efficiencies_configuration: CountersEfficienciesConfiguration
     heat_exchanger_thermal_efficiency: Optional[int]
     energy_saving: Optional[int]
