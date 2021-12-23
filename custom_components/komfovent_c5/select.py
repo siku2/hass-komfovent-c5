@@ -14,7 +14,11 @@ async def async_setup_entry(
 ) -> bool:
     coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
-        [OpModeSelect(coord), FlowControlModeSelect(coord), TempControlModeSelect(coord)]
+        [
+            OpModeSelect(coord),
+            FlowControlModeSelect(coord),
+            TempControlModeSelect(coord),
+        ]
     )
     return True
 

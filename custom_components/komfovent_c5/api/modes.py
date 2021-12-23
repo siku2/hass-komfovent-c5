@@ -29,7 +29,7 @@ class OperationMode(enum.IntEnum):
     PROGRAM = 6
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
     @classmethod
@@ -49,7 +49,7 @@ class FlowControlMode(enum.IntEnum):
     DCV = 2
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -59,7 +59,7 @@ class TemperatureControlMode(enum.IntEnum):
     ROOM = 2
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -71,7 +71,7 @@ class VavStatus(enum.IntEnum):
     DOUBLE = 4
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -83,7 +83,7 @@ class ConfigurationFlags(enum.IntFlag):
     HEATING = 1 << 0
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -95,12 +95,12 @@ class ModeState:
     configuration: Optional[ConfigurationFlags]
 
     @classmethod
-    def _consume(cls, registers: Iterator[int], special: bool):
+    def consume_from_registers(cls, registers: Iterator[int], special: bool):
         supply_flow = consume_u32(registers)
         extract_flow = consume_u32(registers)
         setpoint_temperature = consume_u16(registers) / 10.0
         if special:
-            configuration = ConfigurationFlags._consume(registers)
+            configuration = ConfigurationFlags.consume_from_registers(registers)
         else:
             configuration = None
 
@@ -128,7 +128,7 @@ class Mode:
         registers = await self._client.read_many_u16(
             self._reg_start + self.REG_OFF_SUPPLY_FLOW, 5
         )
-        return ModeState._consume(iter(registers), False)
+        return ModeState.consume_from_registers(iter(registers), False)
 
     async def supply_flow(self) -> int:
         reg = self._reg_start + self.REG_OFF_SUPPLY_FLOW
@@ -163,7 +163,7 @@ class SpecialMode(Mode):
         registers = await self._client.read_many_u16(
             self._reg_start + self.REG_OFF_SUPPLY_FLOW, 6
         )
-        return ModeState._consume(iter(registers), True)
+        return ModeState.consume_from_registers(iter(registers), True)
 
     async def configuration(self) -> ConfigurationFlags:
         return ConfigurationFlags(
@@ -190,23 +190,23 @@ class ModesState:
     modes: Dict[OperationMode, ModeState]
 
     @classmethod
-    def _consume(cls, ahu: bool, registers: Iterator[int]):
-        operation_mode = OperationMode._consume(registers)
+    def consume_from_registers(cls, ahu: bool, registers: Iterator[int]):
+        operation_mode = OperationMode.consume_from_registers(registers)
         modes = {
-            OperationMode.COMFORT1: ModeState._consume(registers, False),
-            OperationMode.COMFORT2: ModeState._consume(registers, False),
-            OperationMode.ECONOMY1: ModeState._consume(registers, False),
-            OperationMode.ECONOMY2: ModeState._consume(registers, False),
-            OperationMode.SPECIAL: ModeState._consume(registers, True),
+            OperationMode.COMFORT1: ModeState.consume_from_registers(registers, False),
+            OperationMode.COMFORT2: ModeState.consume_from_registers(registers, False),
+            OperationMode.ECONOMY1: ModeState.consume_from_registers(registers, False),
+            OperationMode.ECONOMY2: ModeState.consume_from_registers(registers, False),
+            OperationMode.SPECIAL: ModeState.consume_from_registers(registers, True),
         }
 
         return cls(
             ahu=ahu,
             operation_mode=operation_mode,
             modes=modes,
-            flow_control_mode=FlowControlMode._consume(registers),
-            temperature_control_mode=TemperatureControlMode._consume(registers),
-            vav_status=VavStatus._consume(registers),
+            flow_control_mode=FlowControlMode.consume_from_registers(registers),
+            temperature_control_mode=TemperatureControlMode.consume_from_registers(registers),
+            vav_status=VavStatus.consume_from_registers(registers),
             vav_sensors_range=consume_u16(registers),
             nominal_supply_pressure=consume_u16(registers),
             nominal_exhaust_pressure=consume_u16(registers),
@@ -240,7 +240,7 @@ class Modes:
                 (self.REG_NOMINAL_EXHAUST_PRESSURE - self.REG_OPERATION_MODE) + 1,
             ),
         )
-        return ModesState._consume(ahu, iter(registers))
+        return ModesState.consume_from_registers(ahu, iter(registers))
 
     async def ahu_on(self) -> bool:
         return bool(await self._client.read_u16(self.REG_AHU_ON))

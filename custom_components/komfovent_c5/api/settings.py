@@ -28,13 +28,13 @@ class FlowUnits(enum.IntEnum):
     PASCAL = 3
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
     def unit_symbol(self) -> str:
         return _FLOW_UNIT_TO_SYMBOL[self]
 
-    def _common_factor(self) -> float:
+    def common_factor(self) -> float:
         if self == self.CUBIC_METER_PER_SECOND:
             return 1e-3
 
@@ -58,7 +58,7 @@ class Rs485:
     stop_bits: int
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         raw = consume_u16(registers)
         raw_stop_bits = raw & 0b0_0001
         raw_parity = (raw & 0b0_0010) >> 1
@@ -79,7 +79,7 @@ class Language(enum.IntEnum):
     GERMAN = 4
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -99,19 +99,19 @@ class SettingsState:
     bacnet_id: int
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         time = consume_time(registers, read_seconds=True)
         # reg 451 is the day of week, which we don't need
         _ = consume_u16(registers)
         date = consume_date(registers)
-        language = Language._consume(registers)
+        language = Language.consume_from_registers(registers)
         modbus_address = consume_u16(registers)
         ip_address = consume_ip_address(registers)
-        flow_units = FlowUnits._consume(registers)
+        flow_units = FlowUnits.consume_from_registers(registers)
         ahu_serial_number = consume_string(registers, 8)
         ahu_name = consume_string(registers, 12)
         ip_mask = consume_ip_address(registers)
-        rs_485 = Rs485._consume(registers)
+        rs_485 = Rs485.consume_from_registers(registers)
         daylight_saving_time = bool(consume_u16(registers))
         # reg 483 isn't documented, skip
         _ = consume_u16(registers)
@@ -162,7 +162,7 @@ class Settings:
             self.REG_TIME,
             ((self.REG_BACNET_ID + 1) - self.REG_TIME) + 1,
         )
-        return SettingsState._consume(iter(registers))
+        return SettingsState.consume_from_registers(iter(registers))
 
 
 _FLOW_UNIT_TO_SYMBOL = {

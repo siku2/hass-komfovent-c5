@@ -38,6 +38,7 @@ class Client:
             # let's try to connect manually and see what's going on
             # TODO: let's just patch the connection_made method of self._modbus so that
             #       we know when the connection is established and use that to resume here
+            # pylint: disable=protected-access
             await modbus.loop.create_connection(
                 modbus._create_protocol, modbus.host, modbus.port
             )

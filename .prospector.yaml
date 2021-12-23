@@ -8,3 +8,9 @@ mypy:
   run: true
   options:
     ignore-missing-imports: true
+
+pylint:
+  disable:
+    - too-many-instance-attributes
+    - too-many-locals
+    - too-many-statements

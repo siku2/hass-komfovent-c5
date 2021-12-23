@@ -20,7 +20,7 @@ class C5Status(enum.IntEnum):
     RUNNING = 2
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -32,7 +32,7 @@ class AirQualitySensorType(enum.IntEnum):
     TMP = 4
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -48,7 +48,7 @@ class CountersEfficienciesConfiguration(enum.IntFlag):
     HX_EFFICIENCY = 1 << 0
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -61,7 +61,7 @@ class ActiveFunctions(enum.IntFlag):
     OCV = 1 << 0
 
     @classmethod
-    def _consume(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
 
 
@@ -124,13 +124,13 @@ class MonitoringState:
     air_heater_operation_kwh: int
 
     @classmethod
-    def _consume(cls, registers: Iterator[int], *, units: FlowUnits):
+    def consume_from_registers(cls, registers: Iterator[int], *, units: FlowUnits):
         # reg: 2000
-        c5_status = C5Status._consume(registers)
-        mode = OperationMode._consume(registers)
+        c5_status = C5Status.consume_from_registers(registers)
+        mode = OperationMode.consume_from_registers(registers)
         # reg: 2002
-        supply_flow = consume_u32(registers) * units._common_factor()
-        exhaust_flow = consume_u32(registers) * units._common_factor()
+        supply_flow = consume_u32(registers) * units.common_factor()
+        exhaust_flow = consume_u32(registers) * units.common_factor()
         # reg: 2006
         supply_temp = consume_i16(registers) / 10.0
         extract_temp = consume_i16(registers) / 10.0
@@ -140,7 +140,7 @@ class MonitoringState:
         return_water_temp = consume_i16(registers) / 10.0
         supply_air_pressure = consume_u16(registers)
         extract_air_pressure = consume_u16(registers)
-        air_quality_sensor_type = AirQualitySensorType._consume(registers)
+        air_quality_sensor_type = AirQualitySensorType.consume_from_registers(registers)
         air_quality_level = consume_u16(registers)
         supply_air_humidity = consume_u16(registers) / 10.0
         water_heater_level = consume_u16(registers) / 10.0
@@ -166,13 +166,13 @@ class MonitoringState:
         water_heater_pump = bool(consume_u16(registers))
         water_cooler_pump = bool(consume_u16(registers))
         # reg: 2036
-        supply_flow_setpoint = consume_u32(registers) * units._common_factor()
-        extract_flow_setpoint = consume_u32(registers) * units._common_factor()
+        supply_flow_setpoint = consume_u32(registers) * units.common_factor()
+        extract_flow_setpoint = consume_u32(registers) * units.common_factor()
         # reg: 2040
         internal_supply_temp = consume_i16(registers) / 10.0
 
         # reg: 2200
-        efficiencies_configuration = CountersEfficienciesConfiguration._consume(
+        efficiencies_configuration = CountersEfficienciesConfiguration.consume_from_registers(
             registers
         )
         heat_exchanger_thermal_efficiency: Optional[int] = consume_u16(registers)
@@ -197,7 +197,7 @@ class MonitoringState:
         # reg: 2215
         supply_fan_power = consume_u16(registers)
         exhaust_fan_power = consume_u16(registers)
-        active_functions = ActiveFunctions._consume(registers)
+        active_functions = ActiveFunctions.consume_from_registers(registers)
         # reg: 2218
         air_cooler_operation_hours = consume_u32(registers)
         heat_exchanger_operation_kwh = consume_u32(registers)
@@ -286,4 +286,4 @@ class Monitoring:
             )
             + 1,
         )
-        return MonitoringState._consume(itertools.chain(regs1, regs2), units=units)
+        return MonitoringState.consume_from_registers(itertools.chain(regs1, regs2), units=units)
