@@ -17,9 +17,9 @@ from .const import DOMAIN
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> bool:
-    c: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
     diagram_sensors = (
-        cls(c)
+        cls(coord)
         for cls in (
             ExtractAirflowSetpoint,
             ExtractAirflowActual,
@@ -46,12 +46,12 @@ async def async_setup_entry(
     )
     async_add_entities(
         [
-            VavSensorsRange(c),
-            NominalSupplyPressure(c),
-            NominalExhaustPressure(c),
-            ActiveModeSupplyFlow(c),
-            ActiveModeExtractFlow(c),
-            ActiveModeTemperatureSetpoint(c),
+            VavSensorsRange(coord),
+            NominalSupplyPressure(coord),
+            NominalExhaustPressure(coord),
+            ActiveModeSupplyFlow(coord),
+            ActiveModeExtractFlow(coord),
+            ActiveModeTemperatureSetpoint(coord),
             *diagram_sensors,
         ]
     )

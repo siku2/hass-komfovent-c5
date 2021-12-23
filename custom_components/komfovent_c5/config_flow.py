@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any, Dict
 
 import voluptuous as vol
 from homeassistant import config_entries
@@ -16,11 +17,11 @@ ERR_CONNECT_FAILED = "connect_failed"
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    async def async_step_user(self, info: dict) -> FlowResult:
+    async def async_step_user(self, user_input: Dict[str, Any] = None) -> FlowResult:
         errors = {}
-        if info is not None:
-            host: str = info[CONF_HOST]
-            port: int = info[CONF_PORT]
+        if user_input is not None:
+            host: str = user_input[CONF_HOST]
+            port: int = user_input[CONF_PORT]
 
             try:
                 client = await Client.connect(host, port, connect_timeout=10.0)
@@ -30,7 +31,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await client.disconnect()
 
             if not errors:
-                return self.async_create_entry(title=host, data=info)
+                return self.async_create_entry(title=host, data=user_input)
 
         return self.async_show_form(
             step_id="user",

@@ -26,8 +26,8 @@ class C5Status(enum.IntEnum):
 
 class AirQualitySensorType(enum.IntEnum):
     CO2 = 0
-    VOCq = 1
-    VOCp = 2
+    VOC_Q = 1
+    VOC_P = 2
     RH = 3
     TMP = 4
 
@@ -108,7 +108,7 @@ class MonitoringState:
     efficiencies_configuration: CountersEfficienciesConfiguration
     heat_exchanger_thermal_efficiency: Optional[int]
     energy_saving: Optional[int]
-    heat_exchanger_recovery: int
+    heat_exchanger_recovery: Optional[int]
     supply_sfp: float
     exhaust_sfp: float
     outdoor_air_filter_impurity_level: int
@@ -175,14 +175,14 @@ class MonitoringState:
         efficiencies_configuration = CountersEfficienciesConfiguration._consume(
             registers
         )
-        heat_exchanger_thermal_efficiency = consume_u16(registers)
+        heat_exchanger_thermal_efficiency: Optional[int] = consume_u16(registers)
         if heat_exchanger_thermal_efficiency == 0xFF:
             heat_exchanger_thermal_efficiency = None
-        energy_saving = consume_u16(registers)
+        energy_saving: Optional[int] = consume_u16(registers)
         if energy_saving == 0xFF:
             energy_saving = None
         # reg: 2203
-        heat_exchanger_recovery = consume_u32(registers)
+        heat_exchanger_recovery: Optional[int] = consume_u32(registers)
         if heat_exchanger_recovery == 0xFFFF_FFFF:
             heat_exchanger_recovery = None
         # reg: 2205

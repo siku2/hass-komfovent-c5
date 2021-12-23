@@ -234,8 +234,8 @@ class Modes:
     async def ahu_on(self) -> bool:
         return bool(await self._client.read_u16(self.REG_AHU_ON))
 
-    async def set_ahu_on(self, on: bool) -> None:
-        await self._client.write_u16(self.REG_AHU_ON, int(on))
+    async def set_ahu_on(self, ahu_on: bool) -> None:
+        await self._client.write_u16(self.REG_AHU_ON, int(ahu_on))
 
     async def operation_mode(self) -> OperationMode:
         return OperationMode(await self._client.read_u16(self.REG_OPERATION_MODE))

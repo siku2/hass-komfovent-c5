@@ -36,7 +36,8 @@ class Client:
         modbus = self._modbus
         if modbus.protocol is None or not modbus.connected:
             # let's try to connect manually and see what's going on
-            # TODO: let's just patch the connection_made method of self._modbus so that we know when the connection is established and use that to resume here
+            # TODO: let's just patch the connection_made method of self._modbus so that
+            #       we know when the connection is established and use that to resume here
             await modbus.loop.create_connection(
                 modbus._create_protocol, modbus.host, modbus.port
             )
@@ -49,55 +50,57 @@ class Client:
     async def read_u16(self, address: int) -> int:
         async with self._lock:
             protocol = await self._protocol()
-            rr: ReadHoldingRegistersResponse = await protocol.read_holding_registers(
-                address, count=1
+            read_response: ReadHoldingRegistersResponse = (
+                await protocol.read_holding_registers(address, count=1)
             )
-        assert not rr.isError()
-        return rr.registers[0]
+        assert not read_response.isError()
+        return read_response.registers[0]
 
     async def write_u16(self, address: int, value: int) -> None:
         async with self._lock:
             protocol = await self._protocol()
-            wr: WriteSingleRegisterResponse = await protocol.write_register(
+            write_response: WriteSingleRegisterResponse = await protocol.write_register(
                 address, value & 0xFFFF
             )
-        assert not wr.isError()
+        assert not write_response.isError()
 
     async def read_u8_couple(self, address: int) -> Tuple[int, int]:
         value = await self.read_u16(address)
         return consume_u8_couple_from_u16(value)
 
-    async def write_u8_couple(self, address: int, lo: int, hi: int) -> None:
-        value = ((hi << 8) & 0xFF00) | (lo & 0x00FF)
+    async def write_u8_couple(
+        self, address: int, low_byte: int, high_byte: int
+    ) -> None:
+        value = ((high_byte << 8) & 0xFF00) | (low_byte & 0x00FF)
         await self.write_u16(address, value)
 
     async def read_u32(self, address: int) -> int:
         async with self._lock:
             protocol = await self._protocol()
-            rr: ReadHoldingRegistersResponse = await protocol.read_holding_registers(
-                address, count=2
+            read_response: ReadHoldingRegistersResponse = (
+                await protocol.read_holding_registers(address, count=2)
             )
-        assert not rr.isError()
-        return consume_u32(iter(rr.registers))
+        assert not read_response.isError()
+        return consume_u32(iter(read_response.registers))
 
     async def write_u32(self, address: int, value: int) -> None:
-        lo = value & 0x0000FFFF
-        hi = (value & 0xFFFF0000) >> 16
+        low_register = value & 0x0000FFFF
+        high_register = (value & 0xFFFF0000) >> 16
         async with self._lock:
             protocol = await self._protocol()
-            wr: WriteMultipleRegistersResponse = await protocol.write_registers(
-                address, (hi, lo)
+            write_response: WriteMultipleRegistersResponse = (
+                await protocol.write_registers(address, (high_register, low_register))
             )
-        assert not wr.isError()
+        assert not write_response.isError()
 
     async def read_many_u16(self, address: int, count: int) -> List[int]:
         async with self._lock:
             protocol = await self._protocol()
-            rr: ReadHoldingRegistersResponse = await protocol.read_holding_registers(
-                address, count=count
+            read_respones: ReadHoldingRegistersResponse = (
+                await protocol.read_holding_registers(address, count=count)
             )
-        assert not rr.isError()
-        return rr.registers
+        assert not read_respones.isError()
+        return read_respones.registers
 
 
 def consume_u16(registers: Iterator[int]) -> int:
@@ -123,10 +126,10 @@ def consume_u8_couple(registers: Iterator[int]) -> Tuple[int, int]:
 
 def consume_u32(registers: Iterator[int]) -> int:
     try:
-        hi, lo = next(registers), next(registers)
+        high_register, low_register = next(registers), next(registers)
     except StopIteration:
         raise ValueError("missing register(s) to consume u32") from None
-    return ((hi << 16) & 0xFFFF0000) | lo & 0x0000FFFF
+    return ((high_register << 16) & 0xFFFF0000) | low_register & 0x0000FFFF
 
 
 def consume_string(registers: Iterator[int], length: int) -> str:

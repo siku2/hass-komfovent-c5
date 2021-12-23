@@ -11,8 +11,8 @@ from .const import DOMAIN
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> bool:
-    c: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([AhuControl(c)])
+    coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
+    async_add_entities([AhuControl(coord)])
     return True
 
 

@@ -12,9 +12,9 @@ from .const import DOMAIN
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> bool:
-    c: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
-        [OpModeSelect(c), FlowControlModeSelect(c), TempControlModeSelect(c)]
+        [OpModeSelect(coord), FlowControlModeSelect(coord), TempControlModeSelect(coord)]
     )
     return True
 

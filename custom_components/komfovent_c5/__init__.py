@@ -23,7 +23,6 @@ from .api import (
     Client,
     Modes,
     ModesState,
-    ModeState,
     Monitoring,
     MonitoringState,
     Settings,
@@ -41,7 +40,7 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
 
 @dataclasses.dataclass()
 class KomfoventState:
-    modes: ModeState
+    modes: ModesState
     monitoring: MonitoringState
 
     @classmethod
@@ -60,7 +59,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
     async def __fetch_data(self) -> KomfoventState:
         return await KomfoventState.read_all(self.client, self.settings_state)
 
-    async def __initalize(self, client: Client, entry: ConfigEntry) -> None:
+    async def _initalize(self, client: Client, entry: ConfigEntry) -> None:
         self.client = client
         self.settings_state = await Settings(client).read_all()
         self.host_id = f"{entry.data[CONF_HOST]}:{entry.data[CONF_PORT]}"
@@ -76,7 +75,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
             name="state",
             update_interval=timedelta(seconds=30),
         )
-        await coordinator.__initalize(client, entry)
+        await coordinator._initalize(client, entry)
 
         return coordinator
 
@@ -88,7 +87,7 @@ async def setup_coordinator(hass, entry: ConfigEntry) -> None:
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
 
-    logging.info(f"connecting to '{host}:{port}'")
+    logging.info("connecting to '%s:%d'", host, port)
     try:
         client = await Client.connect(host, port, connect_timeout=10.0)
     except asyncio.TimeoutError:
