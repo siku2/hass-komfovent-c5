@@ -34,7 +34,7 @@ class OpModeSelect(KomfoventEntity, SelectEntity):
 
     @property
     def options(self) -> List[str]:
-        return list(OperationMode.__members__.keys())
+        return [mode.name for mode in OperationMode.selectable_modes()]
 
     async def async_select_option(self, option: str) -> None:
         mode = OperationMode[option]

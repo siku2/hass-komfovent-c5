@@ -1,6 +1,7 @@
 {
   "state": {
     "komfovent_c5__operation_mode": {
+      "UNKNOWN": "Unbekannt",
       "COMFORT1": "Komfort 1",
       "COMFORT2": "Komfort 2",
       "ECONOMY1": "Sparsam 1",

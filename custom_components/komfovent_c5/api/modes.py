@@ -20,6 +20,7 @@ __all__ = [
 
 
 class OperationMode(enum.IntEnum):
+    UNKNOWN = 0
     COMFORT1 = 1
     COMFORT2 = 2
     ECONOMY1 = 3
@@ -30,6 +31,16 @@ class OperationMode(enum.IntEnum):
     @classmethod
     def _consume(cls, registers: Iterator[int]):
         return cls(consume_u16(registers))
+
+    @classmethod
+    def selectable_modes(cls):
+        return (
+            cls.COMFORT1,
+            cls.COMFORT2,
+            cls.ECONOMY1,
+            cls.ECONOMY2,
+            cls.SPECIAL,
+        )
 
 
 class FlowControlMode(enum.IntEnum):
@@ -241,6 +252,7 @@ class Modes:
         return OperationMode(await self._client.read_u16(self.REG_OPERATION_MODE))
 
     async def set_operation_mode(self, mode: OperationMode) -> None:
+        assert mode != OperationMode.UNKNOWN
         await self._client.write_u16(self.REG_OPERATION_MODE, mode.value)
 
     def mode_registers(self, mode: OperationMode) -> Mode:

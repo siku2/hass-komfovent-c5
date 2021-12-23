@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- "UNKNOWN" operation mode for mode 0, because the device reports it even though it's not documented to exist.
+
+### Changed
+
+- Hide "PROGRAM" and "UNKNOWN" operation mode from the mode select.
+
 ### Fixed
 
 - AHU control switch wasn't working because it implemented the non-async family of functions.
