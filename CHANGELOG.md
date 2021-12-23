@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2021-12-23
+
 ### Added
 
 - "UNKNOWN" operation mode for mode 0, because the device reports it even though it's not documented to exist.
@@ -42,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mode sensors and selects
 - English and German translations
 
-[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.1...main
+[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.2...main
+[0.2.2]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.2
 [0.2.1]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.1
 [0.2.0]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.0
 [0.1.0]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.1.0
