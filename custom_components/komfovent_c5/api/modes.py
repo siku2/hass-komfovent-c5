@@ -205,7 +205,9 @@ class ModesState:
             operation_mode=operation_mode,
             modes=modes,
             flow_control_mode=FlowControlMode.consume_from_registers(registers),
-            temperature_control_mode=TemperatureControlMode.consume_from_registers(registers),
+            temperature_control_mode=TemperatureControlMode.consume_from_registers(
+                registers
+            ),
             vav_status=VavStatus.consume_from_registers(registers),
             vav_sensors_range=consume_u16(registers),
             nominal_supply_pressure=consume_u16(registers),
@@ -213,8 +215,8 @@ class ModesState:
         )
 
     @property
-    def active_mode(self) -> ModeState:
-        return self.modes[self.operation_mode]
+    def active_mode(self) -> Optional[ModeState]:
+        return self.modes.get(self.operation_mode)
 
 
 class Modes:

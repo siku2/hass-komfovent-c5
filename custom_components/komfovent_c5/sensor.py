@@ -169,7 +169,9 @@ class ActiveModeSupplyFlow(FlowMetaSensor):
 
     @property
     def native_value(self) -> StateType:
-        return self._modes_state.active_mode.supply_flow
+        if active_mode := self._modes_state.active_mode:
+            return active_mode.supply_flow
+        return None
 
 
 class ActiveModeExtractFlow(FlowMetaSensor):
@@ -179,7 +181,9 @@ class ActiveModeExtractFlow(FlowMetaSensor):
 
     @property
     def native_value(self) -> StateType:
-        return self._modes_state.active_mode.extract_flow
+        if active_mode := self._modes_state.active_mode:
+            return active_mode.extract_flow
+        return None
 
 
 class ActiveModeTemperatureSetpoint(TemperatureMetaSensor):
@@ -189,7 +193,9 @@ class ActiveModeTemperatureSetpoint(TemperatureMetaSensor):
 
     @property
     def native_value(self) -> StateType:
-        return self._modes_state.active_mode.setpoint_temperature
+        if active_mode := self._modes_state.active_mode:
+            return active_mode.setpoint_temperature
+        return None
 
 
 # The following sensors are all modeled after the diagram shown on page 3 of the MODBUS_C5_manual_EN.pdf manual.

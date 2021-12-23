@@ -172,8 +172,8 @@ class MonitoringState:
         internal_supply_temp = consume_i16(registers) / 10.0
 
         # reg: 2200
-        efficiencies_configuration = CountersEfficienciesConfiguration.consume_from_registers(
-            registers
+        efficiencies_configuration = (
+            CountersEfficienciesConfiguration.consume_from_registers(registers)
         )
         heat_exchanger_thermal_efficiency: Optional[int] = consume_u16(registers)
         if heat_exchanger_thermal_efficiency == 0xFF:
@@ -286,4 +286,6 @@ class Monitoring:
             )
             + 1,
         )
-        return MonitoringState.consume_from_registers(itertools.chain(regs1, regs2), units=units)
+        return MonitoringState.consume_from_registers(
+            itertools.chain(regs1, regs2), units=units
+        )
