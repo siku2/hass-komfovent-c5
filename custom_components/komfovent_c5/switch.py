@@ -26,8 +26,8 @@ class AhuControl(KomfoventEntity, SwitchEntity):
     def is_on(self) -> bool:
         return self._modes_state.ahu
 
-    async def turn_on(self, **kwargs: Any) -> None:
+    async def async_turn_on(self, **kwargs: Any) -> None:
         await self._modes_client.set_ahu_on(True)
 
-    async def turn_off(self, **kwargs: Any) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         await self._modes_client.set_ahu_on(False)

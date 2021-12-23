@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- AHU control switch wasn't working because it implemented the non-async family of functions.
+
 ## [0.2.1] - 2021-12-22
 
 ### Changed
