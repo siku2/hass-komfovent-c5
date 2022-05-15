@@ -23,7 +23,7 @@ ATTR_TEMPERATURE = "temperature"
 SET_SETPOINT_TEMPERATURE_SCHEMA = cv.make_entity_service_schema(
     {
         vol.Optional(ATTR_MODE, default=OperationMode.SPECIAL): cv.enum(OperationMode),
-        vol.Required(ATTR_TEMPERATURE): cv.positive_float(),
+        vol.Required(ATTR_TEMPERATURE): cv.positive_float,
     }
 )
 
