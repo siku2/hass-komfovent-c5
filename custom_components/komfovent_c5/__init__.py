@@ -19,6 +19,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
+from . import services
 from .api import (
     Client,
     Modes,
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 async def async_setup(hass: HomeAssistant, _config) -> bool:
     hass.data[DOMAIN] = {}
+    await services.register(hass)
     return True
 
 

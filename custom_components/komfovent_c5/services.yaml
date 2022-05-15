@@ -1,0 +1,29 @@
+set_setpoint_temperature:
+  name: Set setpoint temperature
+  description: Writes the setpoint temperatures register
+  target:
+    device:
+      integration: komfovent_c5
+  fields:
+    mode:
+      name: Mode
+      required: false
+      default: SPECIAL
+      example: COMFORT1
+      selector:
+        select:
+          options:
+            - COMFORT1
+            - COMFORT2
+            - ECONOMY1
+            - ECONOMY2
+            - SPECIAL
+    temperature:
+      name: Temperature
+      required: true
+      example: "20.0"
+      selector:
+        number:
+          step: 0.1
+          unit_of_measurement: °C
+          min: 0.0
