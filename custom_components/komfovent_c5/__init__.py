@@ -31,7 +31,7 @@ from .api import (
 )
 from .const import DOMAIN, PLATFORMS
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup(hass: HomeAssistant, _config) -> bool:
@@ -73,7 +73,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
     async def build(cls, hass: HomeAssistant, client: Client, entry: ConfigEntry):
         coordinator = cls(
             hass,
-            logger,
+            _LOGGER,
             name="state",
             update_interval=timedelta(seconds=30),
         )
@@ -89,7 +89,7 @@ async def setup_coordinator(hass, entry: ConfigEntry) -> None:
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
 
-    logging.info("connecting to '%s:%d'", host, port)
+    _LOGGER.info("connecting to '%s:%d'", host, port)
     try:
         client = await Client.connect(host, port, connect_timeout=10.0)
     except asyncio.TimeoutError:
