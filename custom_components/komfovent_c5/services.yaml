@@ -1,15 +1,14 @@
 set_setpoint_temperature:
   name: Set setpoint temperature
-  description: Writes the setpoint temperatures register
   fields:
-    device:
+    device: &field-device
       name: Komfovent Device
       required: true
       selector:
         device:
           integration: komfovent_c5
           multiple: true
-    mode:
+    mode: &field-mode
       name: Mode
       required: false
       default: SPECIAL
@@ -32,3 +31,48 @@ set_setpoint_temperature:
           unit_of_measurement: °C
           min: 0.0
           max: 40.0
+set_supply_flow:
+  name: Set supply flow
+  fields:
+    device: *field-device
+    mode: *field-mode
+    value:
+      name: Value
+      required: true
+      selector:
+        number:
+          step: 1
+          mode: box
+set_extract_flow:
+  name: Set extract flow
+  fields:
+    device: *field-device
+    mode: *field-mode
+    value:
+      name: Value
+      required: true
+      selector:
+        number:
+          step: 1
+          mode: box
+set_special_mode_config:
+  name: Set special mode config
+  fields:
+    device: *field-device
+    dehumidifying: &field-set_special_mode_config-bool
+      name: Dehumidifying
+      required: false
+      selector:
+        boolean:
+    humidifying:
+      <<: *field-set_special_mode_config-bool
+      name: Humidifying
+    recirculation:
+      <<: *field-set_special_mode_config-bool
+      name: Recirculation
+    cooling:
+      <<: *field-set_special_mode_config-bool
+      name: Cooling
+    heating:
+      <<: *field-set_special_mode_config-bool
+      name: Heating

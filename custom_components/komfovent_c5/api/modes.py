@@ -1,7 +1,7 @@
 import asyncio
 import dataclasses
 import enum
-from typing import Dict, Iterator, Optional
+from typing import Dict, Iterator, Literal, Optional, overload
 
 from .client import Client, consume_u16, consume_u32
 
@@ -256,6 +256,14 @@ class Modes:
     async def set_operation_mode(self, mode: OperationMode) -> None:
         assert mode != OperationMode.UNKNOWN
         await self._client.write_u16(self.REG_OPERATION_MODE, mode.value)
+
+    @overload
+    def mode_registers(self, mode: Literal[OperationMode.SPECIAL]) -> SpecialMode:
+        ...
+
+    @overload
+    def mode_registers(self, mode: OperationMode) -> Mode:
+        ...
 
     def mode_registers(self, mode: OperationMode) -> Mode:
         reg_start = _OP_MODE_OFFSET[mode]
