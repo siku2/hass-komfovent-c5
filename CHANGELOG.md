@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Sensors based on the active mode now take into account that the active mode might be unavailable.
+- Remove duplicate fields in services.yaml file.
 
 ## [0.2.2] - 2021-12-23
 

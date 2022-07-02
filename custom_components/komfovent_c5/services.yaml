@@ -59,20 +59,28 @@ set_special_mode_config:
   name: Set special mode config
   fields:
     device: *field-device
-    dehumidifying: &field-set_special_mode_config-bool
+    dehumidifying:
       name: Dehumidifying
       required: false
       selector:
         boolean:
     humidifying:
-      <<: *field-set_special_mode_config-bool
       name: Humidifying
+      required: false
+      selector:
+        boolean:
     recirculation:
-      <<: *field-set_special_mode_config-bool
       name: Recirculation
+      required: false
+      selector:
+        boolean:
     cooling:
-      <<: *field-set_special_mode_config-bool
       name: Cooling
+      required: false
+      selector:
+        boolean:
     heating:
-      <<: *field-set_special_mode_config-bool
       name: Heating
+      required: false
+      selector:
+        boolean:
