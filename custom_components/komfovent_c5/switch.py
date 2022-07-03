@@ -13,7 +13,12 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> bool:
     coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([AhuControl(coord)])
+    async_add_entities(
+        [
+            AhuControl(coord),
+            OcvControl(coord),
+        ]
+    )
     return True
 
 
