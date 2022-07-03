@@ -22,6 +22,8 @@ from homeassistant.helpers.update_coordinator import (
 from . import services
 from .api import (
     Client,
+    Functions,
+    FunctionsState,
     Modes,
     ModesState,
     Monitoring,
@@ -42,12 +44,14 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
 
 @dataclasses.dataclass()
 class KomfoventState:
+    functions: FunctionsState
     modes: ModesState
     monitoring: MonitoringState
 
     @classmethod
     async def read_all(cls, client: Client, settings: SettingsState):
         return cls(
+            functions=await Functions(client).read_all(),
             modes=await Modes(client).read_all(),
             monitoring=await Monitoring(client).read_all(units=settings.flow_units),
         )
@@ -129,6 +133,14 @@ class KomfoventEntity(CoordinatorEntity):
 
     def __init__(self, coordinator: KomfoventCoordinator) -> None:
         super().__init__(coordinator)
+
+    @property
+    def _functions_client(self) -> Functions:
+        return Functions(self.coordinator.client)
+
+    @property
+    def _functions_state(self) -> FunctionsState:
+        return self.coordinator.data.functions
 
     @property
     def _modes_client(self) -> Modes:
