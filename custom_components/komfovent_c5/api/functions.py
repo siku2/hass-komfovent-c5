@@ -40,7 +40,7 @@ class Functions:
             self.REG_AQC_SETPOINT1,
             (self.REG_OCV_STATE - self.REG_AQC_SETPOINT1) + 1,
         )
-        return FunctionsState.consume_from_registers(regs)
+        return FunctionsState.consume_from_registers(iter(regs))
 
     async def set_ocv_enabled(self, enabled: bool) -> None:
         await self._client.write_u16(self.REG_OCV_STATE, int(enabled))
