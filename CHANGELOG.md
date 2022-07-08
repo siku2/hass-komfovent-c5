@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2022-07-08
+
 ### Fixed
 
 - Sensors based on the active mode now take into account that the active mode might be unavailable.
@@ -49,7 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mode sensors and selects
 - English and German translations
 
-[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.2...main
+[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.3...main
+[0.2.3]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.3
 [0.2.2]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.2
 [0.2.1]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.1
 [0.2.0]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.0
