@@ -1,0 +1,24 @@
+{
+  "state": {
+    "_": {
+      "UNKNOWN": "Unknown",
+      "CHANGE_EXTRACT_AIR_FILTER": "Change extract air filter",
+      "CHANGE_OUTDOOR_AIR_FILTER": "Change outdoor air filter",
+      "COMPRESSOR_FAILURE": "Compressor failure",
+      "COMPRESSOR_OFF_AIRFLOW": "Heat pump stopped due to insufficient airflow",
+      "COMPRESSOR_OFF_MALFUNCTION": "Heat pump is not working or is malfunctioning",
+      "COMPRESSOR_OFF_TEMPERATURE": "Compressor off",
+      "ELECTRIC_HEATER_OFF": "Electric heater off",
+      "EVAPORATOR_ICING": "Evaporator icing",
+      "HIGH_PRESSURE_ON_COMPRESSOR": "High pressure on compressor",
+      "LOW_EXTRACT_AIRFLOW": "Low extract air flow",
+      "LOW_HEAT_EXCHANGER_EFFICIENCY": "Low heat exchanger efficiency",
+      "LOW_PRESSURE_ON_COMPRESSOR": "Low pressure on compressor",
+      "LOW_SUPPLY_AIRFLOW": "Low supply air flow",
+      "SERVICE_MODE": "Service mode",
+      "SERVICE_TIME": "Service time",
+      "VAV_CALIBRATION_FAIL": "VAV calibration fail",
+      "WATER_PUMP_OR_COIL_ALARM": "Water pump/coil alarm"
+    }
+  }
+}

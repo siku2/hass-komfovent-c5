@@ -1,0 +1,24 @@
+{
+  "state": {
+    "_": {
+      "UNKNOWN": "Unbekannt",
+      "CHANGE_EXTRACT_AIR_FILTER": "Abluft Filter wechseln",
+      "CHANGE_OUTDOOR_AIR_FILTER": "Außenluft Filter wechseln",
+      "COMPRESSOR_FAILURE": "Kompressor Fehler",
+      "COMPRESSOR_OFF_AIRFLOW": "Wärmepumpe steht wegen unzureichendem Luftstrom still",
+      "COMPRESSOR_OFF_MALFUNCTION": "Kompressor Fehler",
+      "COMPRESSOR_OFF_TEMPERATURE": "Kompressor aus",
+      "ELECTRIC_HEATER_OFF": "Elektrischer Erhitzer aus",
+      "EVAPORATOR_ICING": "Vereisung des Verdampfers",
+      "HIGH_PRESSURE_ON_COMPRESSOR": "Hoher Kompressor Druck",
+      "LOW_EXTRACT_AIRFLOW": "Niedriger Abluftstrom",
+      "LOW_HEAT_EXCHANGER_EFFICIENCY": "Niedriger Wärmetauscher-Wirkungsgrad",
+      "LOW_PRESSURE_ON_COMPRESSOR": "Niedriger Kompressor Druck",
+      "LOW_SUPPLY_AIRFLOW": "Niedriger Zuluftstrom",
+      "SERVICE_MODE": "Service Modus",
+      "SERVICE_TIME": "Service Zeit",
+      "VAV_CALIBRATION_FAIL": "VAV Kalibrierungsfehler",
+      "WATER_PUMP_OR_COIL_ALARM": "Wasserpumpe / Register Alarm"
+    }
+  }
+}

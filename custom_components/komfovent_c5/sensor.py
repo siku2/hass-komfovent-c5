@@ -102,11 +102,16 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
+        code_numeric = None
+        code_str = None
         if alarm := self._alarm:
-            code = alarm.code
-        else:
-            code = None
-        return {"code": code}
+            code_numeric = alarm.code
+            code_str = alarm.code_str
+
+        return {
+            "code": code_str,
+            "code_numeric": code_numeric,
+        }
 
 
 class AlarmActiveCountSensor(KomfoventEntity, SensorEntity):

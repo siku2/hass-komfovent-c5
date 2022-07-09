@@ -7,8 +7,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry
 
-from .api import Modes, OperationMode
-from .api.modes import ConfigurationFlags
+from .api import Alarms, ConfigurationFlags, Modes, OperationMode
 from .const import DOMAIN
 
 if TYPE_CHECKING:
@@ -152,6 +151,17 @@ async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> Non
             flags = maybe_set_bit(flags, ConfigurationFlags.HEATING, heating)
             _LOGGER.info("setting config for device id %s: %s", device_id, flags)
             await mode_regs.set_configuration(flags)
+        except Exception:
+            _LOGGER.exception("failed to set extract flow for device id %s", device_id)
+
+
+async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> None:
+    device_ids = set(call.data[ATTR_DEVICE])
+    for device_id, coordinator in coordinators_in_call(hass, device_ids):
+        try:
+            alarms = Alarms(coordinator.client)
+            _LOGGER.info("resetting active alarms for device id %s: %s", device_id)
+            await alarms.reset_active()
         except Exception:
             _LOGGER.exception("failed to set extract flow for device id %s", device_id)
 

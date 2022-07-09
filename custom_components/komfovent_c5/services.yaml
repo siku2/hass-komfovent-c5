@@ -84,3 +84,5 @@ set_special_mode_config:
       required: false
       selector:
         boolean:
+reset_active_alarms:
+  name: Reset active alarms
