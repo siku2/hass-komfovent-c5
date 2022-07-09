@@ -2,6 +2,7 @@ import asyncio
 import dataclasses
 import logging
 from datetime import timedelta
+from typing import List
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -21,6 +22,9 @@ from homeassistant.helpers.update_coordinator import (
 
 from . import services
 from .api import (
+    Alarm,
+    AlarmHistoryEntry,
+    Alarms,
     Client,
     Functions,
     FunctionsState,
@@ -44,13 +48,18 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
 
 @dataclasses.dataclass()
 class KomfoventState:
+    active_alarms: List[Alarm]
+    alarm_history: List[AlarmHistoryEntry]
     functions: FunctionsState
     modes: ModesState
     monitoring: MonitoringState
 
     @classmethod
     async def read_all(cls, client: Client, settings: SettingsState):
+        alarms = Alarms(client)
         return cls(
+            active_alarms=await alarms.read_active(),
+            alarm_history=await alarms.read_history(),
             functions=await Functions(client).read_all(),
             modes=await Modes(client).read_all(),
             monitoring=await Monitoring(client).read_all(units=settings.flow_units),
@@ -133,6 +142,14 @@ class KomfoventEntity(CoordinatorEntity):
 
     def __init__(self, coordinator: KomfoventCoordinator) -> None:
         super().__init__(coordinator)
+
+    @property
+    def _active_alarms(self) -> List[Alarm]:
+        return self.coordinator.data.active_alarms
+
+    @property
+    def _alarm_history(self) -> List[AlarmHistoryEntry]:
+        return self.coordinator.data.alarm_history
 
     @property
     def _functions_client(self) -> Functions:

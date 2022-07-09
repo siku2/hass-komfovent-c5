@@ -1,3 +1,5 @@
+from typing import Optional
+
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -11,6 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import StateType
 
 from . import KomfoventCoordinator, KomfoventEntity
+from .api import Alarm, Alarms
 from .const import DOMAIN
 
 
@@ -18,6 +21,16 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities
 ) -> bool:
     coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
+    alarm_sensors = (
+        cls(coord)
+        for cls in (
+            AlarmActiveCountSensor,
+            AlarmHistoryCountSensor,
+        )
+    )
+    active_alarm_sensors = (
+        AlarmActiveSensor(coord, i) for i in range(Alarms.MAX_ACTIVE_ALERTS)
+    )
     diagram_sensors = (
         cls(coord)
         for cls in (
@@ -52,10 +65,76 @@ async def async_setup_entry(
             ActiveModeSupplyFlow(coord),
             ActiveModeExtractFlow(coord),
             ActiveModeTemperatureSetpoint(coord),
+            *alarm_sensors,
+            *active_alarm_sensors,
             *diagram_sensors,
         ]
     )
     return True
+
+
+class AlarmActiveSensor(KomfoventEntity, SensorEntity):
+    _number: int
+
+    def __init__(self, coordinator: KomfoventCoordinator, number: int) -> None:
+        super().__init__(coordinator)
+        self._number = number
+
+    @property
+    def name(self) -> str:
+        return f"{super().name} Active Alarm {self._number}"
+
+    @property
+    def unique_id(self) -> str:
+        return f"{super().unique_id}-{self._number}"
+
+    @property
+    def _alarm(self) -> Optional[Alarm]:
+        active_alarms = self._active_alarms
+        if self._number < len(active_alarms):
+            return active_alarms[self._number]
+        return None
+
+    @property
+    def native_value(self) -> StateType:
+        if alarm := self._alarm:
+            return alarm.message
+
+    @property
+    def extra_state_attributes(self):
+        if alarm := self._alarm:
+            code = alarm.code
+        else:
+            code = None
+        return {"code": code}
+
+
+class AlarmActiveCountSensor(KomfoventEntity, SensorEntity):
+    @property
+    def name(self) -> str:
+        return f"{super().name} Active Alarms"
+
+    @property
+    def native_value(self) -> StateType:
+        return len(self._active_alarms)
+
+    @property
+    def state_class(self) -> str:
+        return SensorStateClass.MEASUREMENT
+
+
+class AlarmHistoryCountSensor(KomfoventEntity, SensorEntity):
+    @property
+    def name(self) -> str:
+        return f"{super().name} Alarms in History"
+
+    @property
+    def native_value(self) -> StateType:
+        return len(self._alarm_history)
+
+    @property
+    def state_class(self) -> str:
+        return SensorStateClass.MEASUREMENT
 
 
 class FlowMetaSensor(KomfoventEntity, SensorEntity):
