@@ -2,7 +2,7 @@ import dataclasses
 from datetime import datetime
 from typing import Iterator, List
 
-from .alarms_db import message_for_code
+from .alarms_db import code_str_from_code, message_for_code
 from .client import Client, consume_u8_couple, consume_u16
 
 __all__ = [
@@ -19,13 +19,7 @@ class Alarm:
 
     @property
     def code_str(self) -> str:
-        code = self.code & 0xFF
-        if code > 0x7F:
-            letter = "A"
-            code -= 0x7F
-        else:
-            letter = "B"
-        return f"{code}{letter}"
+        return code_str_from_code(self.code)
 
     @classmethod
     def lookup(cls, code: int):

@@ -34,6 +34,16 @@ COMPRESSOR_OFF_MALFUNCTION_MSG = "COMPRESSOR_OFF_MALFUNCTION"
 COMPRESSOR_OFF_MALFUNCTION_RANGE = range(96, 112)
 
 
+def code_str_from_code(code: int) -> str:
+    code &= 0xFF
+    if code > 0x7F:
+        letter = "A"
+        code -= 0x7F
+    else:
+        letter = "B"
+    return f"{code}{letter}"
+
+
 def message_for_code(code: int) -> str:
     code &= 0xFF
     try:

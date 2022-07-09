@@ -4,3 +4,4 @@ PLATFORMS = (
     "sensor",
     "switch",
 )
+EVENT_ALARM = "alarm"
