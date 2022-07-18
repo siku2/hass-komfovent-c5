@@ -86,7 +86,10 @@ class Alarms:
     async def read_active(self) -> List[Alarm]:
         count = await self._client.read_u16(self.REG_ACTIVE_ALARMS_COUNT)
         assert 0 <= count <= 10
-        registers = await self._client.read_many_u16(self.REG_ACTIVE_ALARM1_CODE, count)
+        if count > 0:
+            registers = await self._client.read_many_u16(self.REG_ACTIVE_ALARM1_CODE, count)
+        else:
+            registers = []
         return Alarm.consume_list_from_registers(count, iter(registers))
 
     async def reset_active(self) -> None:
@@ -95,8 +98,11 @@ class Alarms:
     async def read_history(self) -> List[AlarmHistoryEntry]:
         count = await self._client.read_u16(self.REG_HISTORY_COUNT)
         assert 0 <= count <= 50
-        register_count = count * AlarmHistoryEntry.NUM_REGISTERS
-        registers = await self._client.read_many_u16(
-            self.REG_ALARM1_YEAR, register_count
-        )
+        if count > 0:
+            register_count = count * AlarmHistoryEntry.NUM_REGISTERS
+            registers = await self._client.read_many_u16(
+                self.REG_ALARM1_YEAR, register_count
+            )
+        else:
+            registers = []
         return AlarmHistoryEntry.consume_list_from_registers(count, iter(registers))

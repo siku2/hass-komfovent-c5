@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sensors for alarms.
 - Service for resetting active alarms.
 
+### Fixed
+
+- No longer try to read 0 registers if no alarms are active.
+
 ## [0.2.3] - 2022-07-08
 
 ### Fixed

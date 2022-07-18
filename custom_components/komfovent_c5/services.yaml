@@ -86,3 +86,5 @@ set_special_mode_config:
         boolean:
 reset_active_alarms:
   name: Reset active alarms
+  description: Reset all active alarms and restore previous mode.
+  fields: {}
