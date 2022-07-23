@@ -24,7 +24,7 @@ async def async_setup_entry(
 
 
 class CachedKomfoventSwitch(KomfoventEntity, SwitchEntity):
-    CACHE_EXPIRATION = 30
+    CACHE_EXPIRATION = 60.0
 
     _cached_is_on: Optional[bool]
     _cached_is_on_ts: Optional[float]

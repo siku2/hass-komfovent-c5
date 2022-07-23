@@ -8,7 +8,6 @@ from homeassistant.const import CONF_DEVICE_ID, CONF_DOMAIN, CONF_PLATFORM, CONF
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant
 from homeassistant.helpers import ConfigType
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import device_registry
 
 from .const import DOMAIN, EVENT_ALARM
 

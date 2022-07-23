@@ -154,8 +154,13 @@ async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> Non
         except Exception:
             _LOGGER.exception("failed to set extract flow for device id %s", device_id)
 
+RESET_ACTIVE_ALARMS_SCHEMA = vol.Schema(
+    {
+        ATTR_DEVICE: DEVICE_SCHEMA,
+    }
+)
 
-async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> None:
+async def reset_active_alarms(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])
     for device_id, coordinator in coordinators_in_call(hass, device_ids):
         try:
@@ -185,10 +190,15 @@ async def register(hass: HomeAssistant) -> None:
         functools.partial(set_extract_flow, hass),
         SET_EXTRACT_FLOW_SCHEMA,
     )
-
     hass.services.async_register(
         DOMAIN,
         "set_special_mode_config",
         functools.partial(set_special_mode_config, hass),
         SET_SPECIAL_MODE_CONFIG_SCHEMA,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        "reset_active_alarms",
+        functools.partial(reset_active_alarms, hass),
+        RESET_ACTIVE_ALARMS_SCHEMA,
     )
