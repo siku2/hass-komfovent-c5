@@ -36,7 +36,7 @@ class CachedKomfoventSwitch(KomfoventEntity, SwitchEntity):
 
     @property
     def is_on(self) -> bool:
-        if cached := self.cached_is_on is not None:
+        if (cached := self.cached_is_on) is not None:
             return cached
         return self.uncached_is_on
 

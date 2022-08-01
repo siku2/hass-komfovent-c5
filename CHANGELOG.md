@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2022-08-01
+
+### Fixed
+
+- Debouncing for switches should actually work now.
+
 ## [0.2.4] - 2022-07-23
 
 ### Added
@@ -62,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mode sensors and selects
 - English and German translations
 
-[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.4...main
+[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.5...main
+[0.2.5]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.5
 [0.2.4]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.4
 [0.2.3]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.3
 [0.2.2]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.2
