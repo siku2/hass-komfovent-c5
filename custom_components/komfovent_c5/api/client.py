@@ -5,10 +5,7 @@ import itertools
 from ipaddress import IPv4Address
 from typing import Iterator, List, Tuple
 
-from pymodbus.client.asynchronous.async_io import (
-    ModbusClientProtocol,
-    ReconnectingAsyncioModbusTcpClient,
-)
+from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
 from pymodbus.register_write_message import (
     WriteMultipleRegistersResponse,
@@ -17,50 +14,34 @@ from pymodbus.register_write_message import (
 
 
 class Client:
-    _modbus: ReconnectingAsyncioModbusTcpClient
+    _modbus: AsyncModbusTcpClient
     _lock: asyncio.Lock
 
     @classmethod
     async def connect(cls, host: str, port: int, connect_timeout: float = None):
-        modbus_client = ReconnectingAsyncioModbusTcpClient(
-            protocol_class=None, loop=asyncio.get_running_loop()
-        )
-        await asyncio.wait_for(modbus_client.start(host, port), timeout=connect_timeout)
+        modbus_client = AsyncModbusTcpClient(host, port)
+        await modbus_client.connect()
 
         inst = cls()
         inst._modbus = modbus_client
         inst._lock = asyncio.Lock()
         return inst
 
-    async def _protocol(self) -> ModbusClientProtocol:
-        modbus = self._modbus
-        if modbus.protocol is None or not modbus.connected:
-            # let's try to connect manually and see what's going on
-            # TODO: let's just patch the connection_made method of self._modbus so that
-            #       we know when the connection is established and use that to resume here
-            # pylint: disable=protected-access
-            await modbus.loop.create_connection(
-                modbus._create_protocol, modbus.host, modbus.port
-            )
-        return modbus.protocol
-
     async def disconnect(self) -> None:
         async with self._lock:
-            self._modbus.stop()
+            await self._modbus.close()
 
     async def read_u16(self, address: int) -> int:
         async with self._lock:
-            protocol = await self._protocol()
             read_response: ReadHoldingRegistersResponse = (
-                await protocol.read_holding_registers(address, count=1)
+                await self._modbus.read_holding_registers(address, count=1)
             )
         assert not read_response.isError()
         return read_response.registers[0]
 
     async def write_u16(self, address: int, value: int) -> None:
         async with self._lock:
-            protocol = await self._protocol()
-            write_response: WriteSingleRegisterResponse = await protocol.write_register(
+            write_response: WriteSingleRegisterResponse = await self._modbus.write_register(
                 address, value & 0xFFFF
             )
         assert not write_response.isError()
@@ -77,9 +58,8 @@ class Client:
 
     async def read_u32(self, address: int) -> int:
         async with self._lock:
-            protocol = await self._protocol()
             read_response: ReadHoldingRegistersResponse = (
-                await protocol.read_holding_registers(address, count=2)
+                await self._modbus.read_holding_registers(address, count=2)
             )
         assert not read_response.isError()
         return consume_u32(iter(read_response.registers))
@@ -88,17 +68,15 @@ class Client:
         low_register = value & 0x0000FFFF
         high_register = (value & 0xFFFF0000) >> 16
         async with self._lock:
-            protocol = await self._protocol()
             write_response: WriteMultipleRegistersResponse = (
-                await protocol.write_registers(address, (high_register, low_register))
+                await self._modbus.write_registers(address, (high_register, low_register))
             )
         assert not write_response.isError()
 
     async def read_many_u16(self, address: int, count: int) -> List[int]:
         async with self._lock:
-            protocol = await self._protocol()
             read_respones: ReadHoldingRegistersResponse = (
-                await protocol.read_holding_registers(address, count=count)
+                await self._modbus.read_holding_registers(address, count=count)
             )
         assert not read_respones.isError()
         return read_respones.registers

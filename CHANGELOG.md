@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2023-02-07
+
+### Changed
+
+- Update to pymodbus 3 for Home Assistant 2023 compatibility.
+
 ## [0.2.5] - 2022-08-01
 
 ### Fixed
@@ -68,11 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mode sensors and selects
 - English and German translations
 
-[Unreleased]: https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/compare/v0.2.5...main
-[0.2.5]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.5
-[0.2.4]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.4
-[0.2.3]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.3
-[0.2.2]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.2
-[0.2.1]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.1
-[0.2.0]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.2.0
-[0.1.0]:      https://gitlab.bg12.ch/home-assistant/komfovent-c5/-/tags/v0.1.0
+[Unreleased]: https://github.com/siku2/hass-komfovent-c5
+[0.2.6]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.6
+[0.2.5]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.5
+[0.2.4]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.4
+[0.2.3]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.3
+[0.2.2]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.2
+[0.2.1]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.1
+[0.2.0]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.2.0
+[0.1.0]:      https://github.com/siku2/hass-komfovent-c5/tags/v0.1.0

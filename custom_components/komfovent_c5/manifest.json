@@ -10,7 +10,7 @@
   "config_flow": true,
   "dependencies": [],
   "requirements": [
-    "pymodbus>=2.5.0"
+    "pymodbus>=3.0.0"
   ],
   "zeroconf": [],
   "iot_class": "local_polling"
