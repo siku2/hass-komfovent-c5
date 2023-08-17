@@ -18,8 +18,10 @@ class Client:
     _lock: asyncio.Lock
 
     @classmethod
-    async def connect(cls, host: str, port: int, connect_timeout: float = None):
+    async def connect(cls, host: str, port: int, connect_timeout: float | None = None):
         modbus_client = AsyncModbusTcpClient(host, port)
+        if connect_timeout is not None:
+            modbus_client.comm_params.timeout_connect = connect_timeout
         await modbus_client.connect()
 
         inst = cls()
@@ -29,7 +31,7 @@ class Client:
 
     async def disconnect(self) -> None:
         async with self._lock:
-            await self._modbus.close()
+            self._modbus.close()
 
     async def read_u16(self, address: int) -> int:
         async with self._lock:
@@ -41,8 +43,8 @@ class Client:
 
     async def write_u16(self, address: int, value: int) -> None:
         async with self._lock:
-            write_response: WriteSingleRegisterResponse = await self._modbus.write_register(
-                address, value & 0xFFFF
+            write_response: WriteSingleRegisterResponse = (
+                await self._modbus.write_register(address, value & 0xFFFF)
             )
         assert not write_response.isError()
 
@@ -69,7 +71,9 @@ class Client:
         high_register = (value & 0xFFFF0000) >> 16
         async with self._lock:
             write_response: WriteMultipleRegistersResponse = (
-                await self._modbus.write_registers(address, (high_register, low_register))
+                await self._modbus.write_registers(
+                    address, (high_register, low_register)
+                )
             )
         assert not write_response.isError()
 
