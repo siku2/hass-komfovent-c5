@@ -9,7 +9,7 @@ CUSTOM_COMPONENTS_PATH = (Path(__file__) / "../../custom_components").resolve()
 sys.path.append(str(CUSTOM_COMPONENTS_PATH))
 
 
-from komfovent_c5.api import Client
+from komfovent_c5.api import Client  # noqa: E402
 
 _global_client_lock = asyncio.Lock()
 
