@@ -1,4 +1,3 @@
-import asyncio
 import dataclasses
 import logging
 from datetime import timedelta
@@ -15,6 +14,8 @@ from homeassistant.const import (
     CONF_PORT,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -38,6 +39,8 @@ from .api import (
 from .const import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
+
+CONFIG_SCHEMA = cv.empty_config_schema()
 
 
 async def async_setup(hass: HomeAssistant, _config) -> bool:
@@ -105,36 +108,33 @@ async def setup_coordinator(hass, entry: ConfigEntry) -> None:
     _LOGGER.info("connecting to '%s:%d'", host, port)
     try:
         client = await Client.connect(host, port, connect_timeout=10.0)
-    except asyncio.TimeoutError:
-        raise asyncio.TimeoutError("failed to connect in time") from None
+    except Exception as exc:
+        raise ConfigEntryNotReady() from exc
 
     coordinator = await KomfoventCoordinator.build(
         hass,
         client,
         entry,
     )
+    await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await setup_coordinator(hass, entry)
 
-    for platform in PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, platform)
-        )
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    for platform in PLATFORMS:
-        await hass.config_entries.async_forward_entry_unload(entry, platform)
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        coordinator: KomfoventCoordinator | None = hass.data[DOMAIN].pop(entry.entry_id)
+        if coordinator:
+            await coordinator.destroy()
 
-    coordinator: KomfoventCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
-    await coordinator.destroy()
-
-    return True
+    return unload_ok
 
 
 class KomfoventEntity(CoordinatorEntity):
