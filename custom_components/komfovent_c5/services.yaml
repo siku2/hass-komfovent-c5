@@ -1,8 +1,10 @@
 set_setpoint_temperature:
   name: Set setpoint temperature
+  description: Set the temperature setpoint of a device
   fields:
     device: &field-device
       name: Komfovent Device
+      description: Komfovent device(s) to run service on
       required: true
       selector:
         device:
@@ -10,6 +12,7 @@ set_setpoint_temperature:
           multiple: true
     mode: &field-mode
       name: Mode
+      description: The mode you want to modify (every mode has its own config)
       required: false
       default: SPECIAL
       example: COMFORT1
@@ -23,6 +26,7 @@ set_setpoint_temperature:
             - SPECIAL
     temperature:
       name: Temperature
+      description: Temperature to set as the setpoint
       required: true
       example: 20.0
       selector:
@@ -33,11 +37,13 @@ set_setpoint_temperature:
           max: 40.0
 set_supply_flow:
   name: Set supply flow
+  description: Set the supply flow of a device
   fields:
     device: *field-device
     mode: *field-mode
     value:
       name: Value
+      description: Value to set
       required: true
       selector:
         number:
@@ -45,11 +51,13 @@ set_supply_flow:
           mode: box
 set_extract_flow:
   name: Set extract flow
+  description: Set the extract flow of a device
   fields:
     device: *field-device
     mode: *field-mode
     value:
       name: Value
+      description: Value to set
       required: true
       selector:
         number:
@@ -57,30 +65,36 @@ set_extract_flow:
           mode: box
 set_special_mode_config:
   name: Set special mode config
+  description: Set the special mode configuration of a device
   fields:
     device: *field-device
     dehumidifying:
       name: Dehumidifying
+      description: Whether to enable dehumidifying
       required: false
       selector:
         boolean:
     humidifying:
       name: Humidifying
+      description: Whether to enable humidifying
       required: false
       selector:
         boolean:
     recirculation:
       name: Recirculation
+      description: Whether to enable recirculation
       required: false
       selector:
         boolean:
     cooling:
       name: Cooling
+      description: Whether to enable cooling
       required: false
       selector:
         boolean:
     heating:
       name: Heating
+      description: Whether to enable heating
       required: false
       selector:
         boolean:
