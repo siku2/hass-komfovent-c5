@@ -1,8 +1,8 @@
 {
   "name": "Komfovent C5",
+  "filename": "dingz.zip",
+  "hide_default_branch": true,
+  "homeassistant": "2023.8.2",
   "render_readme": true,
-  "domains": [
-    "sensor"
-  ],
-  "iot_class": "Local Polling"
+  "zip_release": true
 }

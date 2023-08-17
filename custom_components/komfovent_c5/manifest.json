@@ -1,17 +1,18 @@
 {
   "domain": "komfovent_c5",
   "name": "Komfovent C5",
-  "version": "0.2.5",
-  "documentation": "https://github.com/siku2/hass-komfovent-c5/wiki",
-  "issue_tracker": "https://github.com/siku2/hass-komfovent-c5/issues",
+  "after_dependencies": [
+    "modbus"
+  ],
   "codeowners": [
     "@siku2"
   ],
   "config_flow": true,
   "dependencies": [],
-  "requirements": [
-    "pymodbus>=3.0.0"
-  ],
-  "zeroconf": [],
-  "iot_class": "local_polling"
+  "documentation": "https://github.com/siku2/hass-komfovent-c5/wiki",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/siku2/hass-komfovent-c5/issues",
+  "requirements": [],
+  "version": "0.0.0",
+  "zeroconf": []
 }

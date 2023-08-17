@@ -1,0 +1,6 @@
+colorlog==6.7.0
+homeassistant==2023.8.2
+pip>=21.0,<23.3
+ruff==0.0.284
+# as specified by the home assistant modbus component
+pymodbus~=3.3.1
