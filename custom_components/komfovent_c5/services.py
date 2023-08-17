@@ -1,6 +1,7 @@
 import functools
 import logging
-from typing import TYPE_CHECKING, Iterable, Iterator, Optional, Tuple
+from collections.abc import Iterable, Iterator
+from typing import TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -27,7 +28,7 @@ MODE_SCHEMA = vol.Any(cv.enum(OperationMode), None)
 
 def coordinators_in_call(
     hass: HomeAssistant, device_ids: Iterable[str]
-) -> Iterator[Tuple[str, "KomfoventCoordinator"]]:
+) -> Iterator[tuple[str, "KomfoventCoordinator"]]:
     dev_reg = device_registry.async_get(hass)
     domain_data = hass.data[DOMAIN]
 
@@ -37,7 +38,7 @@ def coordinators_in_call(
             _LOGGER.warn("device not found: %s", device_id)
             continue
         for entry_id in device.config_entries:
-            coordinator: Optional["KomfoventCoordinator"] = domain_data.get(entry_id)
+            coordinator: "KomfoventCoordinator" | None = domain_data.get(entry_id)
             if not coordinator:
                 _LOGGER.warning("config entry has no coordinator: %s", entry_id)
                 continue
@@ -120,14 +121,14 @@ SET_SPECIAL_MODE_CONFIG_SCHEMA = vol.Schema(
 
 async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])
-    dehumidifying: Optional[bool] = call.data["dehumidifying"]
-    humidifying: Optional[bool] = call.data["humidifying"]
-    recirculation: Optional[bool] = call.data["recirculation"]
-    cooling: Optional[bool] = call.data["cooling"]
-    heating: Optional[bool] = call.data["heating"]
+    dehumidifying: bool | None = call.data["dehumidifying"]
+    humidifying: bool | None = call.data["humidifying"]
+    recirculation: bool | None = call.data["recirculation"]
+    cooling: bool | None = call.data["cooling"]
+    heating: bool | None = call.data["heating"]
 
     def maybe_set_bit(
-        flags: ConfigurationFlags, flag: ConfigurationFlags, control: Optional[bool]
+        flags: ConfigurationFlags, flag: ConfigurationFlags, control: bool | None
     ) -> ConfigurationFlags:
         if control is True:
             return flags | flag
@@ -154,11 +155,13 @@ async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> Non
         except Exception:
             _LOGGER.exception("failed to set extract flow for device id %s", device_id)
 
+
 RESET_ACTIVE_ALARMS_SCHEMA = vol.Schema(
     {
         ATTR_DEVICE: DEVICE_SCHEMA,
     }
 )
+
 
 async def reset_active_alarms(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])

@@ -1,8 +1,8 @@
 import dataclasses
 import enum
+from collections.abc import Iterator
 from datetime import datetime
 from ipaddress import IPv4Address
-from typing import Iterator
 
 from .client import (
     Client,

@@ -2,8 +2,8 @@ import asyncio
 import ctypes
 import datetime
 import itertools
+from collections.abc import Iterator
 from ipaddress import IPv4Address
-from typing import Iterator, List, Tuple
 
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
@@ -48,7 +48,7 @@ class Client:
             )
         assert not write_response.isError()
 
-    async def read_u8_couple(self, address: int) -> Tuple[int, int]:
+    async def read_u8_couple(self, address: int) -> tuple[int, int]:
         value = await self.read_u16(address)
         return consume_u8_couple_from_u16(value)
 
@@ -77,7 +77,7 @@ class Client:
             )
         assert not write_response.isError()
 
-    async def read_many_u16(self, address: int, count: int) -> List[int]:
+    async def read_many_u16(self, address: int, count: int) -> list[int]:
         async with self._lock:
             read_respones: ReadHoldingRegistersResponse = (
                 await self._modbus.read_holding_registers(address, count=count)
@@ -98,11 +98,11 @@ def consume_i16(registers: Iterator[int]) -> int:
     return ctypes.c_int16(raw).value
 
 
-def consume_u8_couple_from_u16(register: int) -> Tuple[int, int]:
+def consume_u8_couple_from_u16(register: int) -> tuple[int, int]:
     return (register & 0xFF00) >> 8, register & 0x00FF
 
 
-def consume_u8_couple(registers: Iterator[int]) -> Tuple[int, int]:
+def consume_u8_couple(registers: Iterator[int]) -> tuple[int, int]:
     value = consume_u16(registers)
     return consume_u8_couple_from_u16(value)
 

@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Iterator
+from collections.abc import Iterator
 
 from .client import Client, consume_u16
 
@@ -22,7 +22,7 @@ class FunctionsState:
         ocv_enabled = consume_u16(registers)
 
         return cls(
-            ocv_enabled=ocv_enabled,
+            ocv_enabled=bool(ocv_enabled),
         )
 
 

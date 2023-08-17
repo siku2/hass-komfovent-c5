@@ -1,5 +1,3 @@
-from typing import Optional
-
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -89,7 +87,7 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
         return f"{super().unique_id}-{self._number}"
 
     @property
-    def _alarm(self) -> Optional[Alarm]:
+    def _alarm(self) -> Alarm | None:
         active_alarms = self._active_alarms
         if self._number < len(active_alarms):
             return active_alarms[self._number]
@@ -283,6 +281,7 @@ class ActiveModeTemperatureSetpoint(TemperatureMetaSensor):
 
 
 # The following sensors are all modeled after the diagram shown on page 3 of the MODBUS_C5_manual_EN.pdf manual.
+
 
 # Extract airflow
 class ExtractAirflowSetpoint(FlowMetaSensor):

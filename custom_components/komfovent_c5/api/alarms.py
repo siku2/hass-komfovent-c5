@@ -1,6 +1,6 @@
 import dataclasses
+from collections.abc import Iterator
 from datetime import datetime
-from typing import Iterator, List
 
 from .alarms_db import code_str_from_code, message_for_code
 from .client import Client, consume_u8_couple, consume_u16
@@ -83,11 +83,13 @@ class Alarms:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def read_active(self) -> List[Alarm]:
+    async def read_active(self) -> list[Alarm]:
         count = await self._client.read_u16(self.REG_ACTIVE_ALARMS_COUNT)
         assert 0 <= count <= 10
         if count > 0:
-            registers = await self._client.read_many_u16(self.REG_ACTIVE_ALARM1_CODE, count)
+            registers = await self._client.read_many_u16(
+                self.REG_ACTIVE_ALARM1_CODE, count
+            )
         else:
             registers = []
         return Alarm.consume_list_from_registers(count, iter(registers))
@@ -95,7 +97,7 @@ class Alarms:
     async def reset_active(self) -> None:
         await self._client.write_u16(self.REG_ACTIVE_ALARMS_COUNT, 0x99C5)
 
-    async def read_history(self) -> List[AlarmHistoryEntry]:
+    async def read_history(self) -> list[AlarmHistoryEntry]:
         count = await self._client.read_u16(self.REG_HISTORY_COUNT)
         assert 0 <= count <= 50
         if count > 0:

@@ -1,7 +1,6 @@
 import dataclasses
 import logging
 from datetime import timedelta
-from typing import List
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -51,8 +50,8 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
 
 @dataclasses.dataclass()
 class KomfoventState:
-    active_alarms: List[Alarm]
-    alarm_history: List[AlarmHistoryEntry]
+    active_alarms: list[Alarm]
+    alarm_history: list[AlarmHistoryEntry]
     functions: FunctionsState
     modes: ModesState
     monitoring: MonitoringState
@@ -144,11 +143,11 @@ class KomfoventEntity(CoordinatorEntity):
         super().__init__(coordinator)
 
     @property
-    def _active_alarms(self) -> List[Alarm]:
+    def _active_alarms(self) -> list[Alarm]:
         return self.coordinator.data.active_alarms
 
     @property
-    def _alarm_history(self) -> List[AlarmHistoryEntry]:
+    def _alarm_history(self) -> list[AlarmHistoryEntry]:
         return self.coordinator.data.alarm_history
 
     @property

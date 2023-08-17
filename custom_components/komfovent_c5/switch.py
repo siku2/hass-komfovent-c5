@@ -1,5 +1,5 @@
 import time
-from typing import Any, Optional
+from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -26,8 +26,8 @@ async def async_setup_entry(
 class CachedKomfoventSwitch(KomfoventEntity, SwitchEntity):
     CACHE_EXPIRATION = 60.0
 
-    _cached_is_on: Optional[bool]
-    _cached_is_on_ts: Optional[float]
+    _cached_is_on: bool | None
+    _cached_is_on_ts: float | None
 
     def __init__(self, coordinator: KomfoventCoordinator) -> None:
         super().__init__(coordinator)
@@ -41,7 +41,7 @@ class CachedKomfoventSwitch(KomfoventEntity, SwitchEntity):
         return self.uncached_is_on
 
     @property
-    def cached_is_on(self) -> Optional[bool]:
+    def cached_is_on(self) -> bool | None:
         if self._cached_is_on is None or self._cached_is_on_ts is None:
             return None
         diff = time.time() - self._cached_is_on_ts

@@ -1,5 +1,3 @@
-from typing import List
-
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -37,7 +35,7 @@ class OpModeSelect(KomfoventEntity, SelectEntity):
         return self._modes_state.operation_mode.name
 
     @property
-    def options(self) -> List[str]:
+    def options(self) -> list[str]:
         return [mode.name for mode in OperationMode.selectable_modes()]
 
     async def async_select_option(self, option: str) -> None:
@@ -59,7 +57,7 @@ class FlowControlModeSelect(KomfoventEntity, SelectEntity):
         return self._modes_state.flow_control_mode.name
 
     @property
-    def options(self) -> List[str]:
+    def options(self) -> list[str]:
         return list(FlowControlMode.__members__.keys())
 
     async def async_select_option(self, option: str) -> None:
@@ -81,7 +79,7 @@ class TempControlModeSelect(KomfoventEntity, SelectEntity):
         return self._modes_state.temperature_control_mode.name
 
     @property
-    def options(self) -> List[str]:
+    def options(self) -> list[str]:
         return list(TemperatureControlMode.__members__.keys())
 
     async def async_select_option(self, option: str) -> None:

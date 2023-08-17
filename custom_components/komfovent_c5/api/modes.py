@@ -1,7 +1,8 @@
 import asyncio
 import dataclasses
 import enum
-from typing import Dict, Iterator, Literal, Optional, overload
+from collections.abc import Iterator
+from typing import Literal, overload
 
 from .client import Client, consume_u16, consume_u32
 
@@ -92,7 +93,7 @@ class ModeState:
     supply_flow: int
     extract_flow: int
     setpoint_temperature: float
-    configuration: Optional[ConfigurationFlags]
+    configuration: ConfigurationFlags | None
 
     @classmethod
     def consume_from_registers(cls, registers: Iterator[int], special: bool):
@@ -187,7 +188,7 @@ class ModesState:
     nominal_supply_pressure: int
     nominal_exhaust_pressure: int
 
-    modes: Dict[OperationMode, ModeState]
+    modes: dict[OperationMode, ModeState]
 
     @classmethod
     def consume_from_registers(cls, ahu: bool, registers: Iterator[int]):
@@ -215,7 +216,7 @@ class ModesState:
         )
 
     @property
-    def active_mode(self) -> Optional[ModeState]:
+    def active_mode(self) -> ModeState | None:
         return self.modes.get(self.operation_mode)
 
 

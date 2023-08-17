@@ -1,7 +1,7 @@
 import dataclasses
 import enum
 import itertools
-from typing import Iterator, Optional
+from collections.abc import Iterator
 
 from .client import Client, consume_i16, consume_u16, consume_u32
 from .modes import OperationMode
@@ -106,9 +106,9 @@ class MonitoringState:
     extract_flow_setpoint: float
     internal_supply_temp: float
     efficiencies_configuration: CountersEfficienciesConfiguration
-    heat_exchanger_thermal_efficiency: Optional[int]
-    energy_saving: Optional[int]
-    heat_exchanger_recovery: Optional[int]
+    heat_exchanger_thermal_efficiency: int | None
+    energy_saving: int | None
+    heat_exchanger_recovery: int | None
     supply_sfp: float
     exhaust_sfp: float
     outdoor_air_filter_impurity_level: int
@@ -175,14 +175,14 @@ class MonitoringState:
         efficiencies_configuration = (
             CountersEfficienciesConfiguration.consume_from_registers(registers)
         )
-        heat_exchanger_thermal_efficiency: Optional[int] = consume_u16(registers)
+        heat_exchanger_thermal_efficiency: int | None = consume_u16(registers)
         if heat_exchanger_thermal_efficiency == 0xFF:
             heat_exchanger_thermal_efficiency = None
-        energy_saving: Optional[int] = consume_u16(registers)
+        energy_saving: int | None = consume_u16(registers)
         if energy_saving == 0xFF:
             energy_saving = None
         # reg: 2203
-        heat_exchanger_recovery: Optional[int] = consume_u32(registers)
+        heat_exchanger_recovery: int | None = consume_u32(registers)
         if heat_exchanger_recovery == 0xFFFF_FFFF:
             heat_exchanger_recovery = None
         # reg: 2205
