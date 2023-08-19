@@ -24,43 +24,41 @@ async def async_setup_entry(
 
 class OpModeSelect(KomfoventEntity, SelectEntity):
     _attr_translation_key = "op_mode"
-    _attr_options = [mode.name.lower() for mode in OperationMode.selectable_modes()]
+    _attr_options = [mode.name for mode in OperationMode.selectable_modes()]
 
     @property
     def current_option(self) -> str:
-        return self._modes_state.operation_mode.name.lower()
+        return self._modes_state.operation_mode.name
 
     async def async_select_option(self, option: str) -> None:
-        mode = OperationMode[option]
+        mode = OperationMode[option.upper()]
         await self._modes_client.set_operation_mode(mode)
         await self.coordinator.async_request_refresh()
 
 
 class FlowControlModeSelect(KomfoventEntity, SelectEntity):
     _attr_translation_key = "flow_control_mode"
-    _attr_options = [mode.name.lower() for mode in FlowControlMode.__members__.values()]
+    _attr_options = [mode.name for mode in FlowControlMode.__members__.values()]
 
     @property
     def current_option(self) -> str:
-        return self._modes_state.flow_control_mode.name.lower()
+        return self._modes_state.flow_control_mode.name
 
     async def async_select_option(self, option: str) -> None:
-        mode = FlowControlMode[option]
+        mode = FlowControlMode[option.upper()]
         await self._modes_client.set_flow_control_mode(mode)
         await self.coordinator.async_request_refresh()
 
 
 class TempControlModeSelect(KomfoventEntity, SelectEntity):
     _attr_translation_key = "temperature_control_mode"
-    _attr_options = [
-        mode.name.lower() for mode in TemperatureControlMode.__members__.values()
-    ]
+    _attr_options = [mode.name for mode in TemperatureControlMode.__members__.values()]
 
     @property
     def current_option(self) -> str:
-        return self._modes_state.temperature_control_mode.name.lower()
+        return self._modes_state.temperature_control_mode.name
 
     async def async_select_option(self, option: str) -> None:
-        mode = TemperatureControlMode[option]
+        mode = TemperatureControlMode[option.upper()]
         await self._modes_client.set_temperature_control_mode(mode)
         await self.coordinator.async_request_refresh()

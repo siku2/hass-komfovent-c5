@@ -19,29 +19,29 @@
       "op_mode": {
         "name": "Operation Mode",
         "state": {
-          "unknown": "Unknown",
-          "comfort1": "Comfort 1",
-          "comfort2": "Comfort 2",
-          "economy1": "Economy 1",
-          "economy2": "Economy 2",
-          "special": "Special",
-          "program": "Program"
+          "UNKNOWN": "Unknown",
+          "COMFORT1": "Comfort 1",
+          "COMFORT2": "Comfort 2",
+          "ECONOMY1": "Economy 1",
+          "ECONOMY2": "Economy 2",
+          "SPECIAL": "Special",
+          "PROGRAM": "Program"
         }
       },
       "flow_control_mode": {
         "name": "Flow Control Mode",
         "state": {
-          "cav": "Constant Air Volume",
-          "vav": "Variable Air Volume",
-          "dcv": "Demand Controlled Ventilation"
+          "CAV": "Constant Air Volume",
+          "VAV": "Variable Air Volume",
+          "DCV": "Demand Controlled Ventilation"
         }
       },
       "temperature_control_mode": {
         "name": "Temperature Control Mode",
         "state": {
-          "supply": "Supply",
-          "extract": "Extract",
-          "room": "Room"
+          "SUPPLY": "Supply",
+          "EXTRACT": "Extract",
+          "ROOM": "Room"
         }
       }
     },
@@ -49,24 +49,24 @@
       "active_alarm": {
         "name": "Active Alarm {position}",
         "state": {
-          "unknown": "Unknown",
-          "change_extract_air_filter": "Change extract air filter",
-          "change_outdoor_air_filter": "Change outdoor air filter",
-          "compressor_failure": "Compressor failure",
-          "compressor_off_airflow": "Heat pump stopped due to insufficient airflow",
-          "compressor_off_malfunction": "Heat pump is not working or is malfunctioning",
-          "compressor_off_temperature": "Compressor off",
-          "electric_heater_off": "Electric heater off",
-          "evaporator_icing": "Evaporator icing",
-          "high_pressure_on_compressor": "High pressure on compressor",
-          "low_extract_airflow": "Low extract air flow",
-          "low_heat_exchanger_efficiency": "Low heat exchanger efficiency",
-          "low_pressure_on_compressor": "Low pressure on compressor",
-          "low_supply_airflow": "Low supply air flow",
-          "service_mode": "Service mode",
-          "service_time": "Service time",
-          "vav_calibration_fail": "VAV calibration fail",
-          "water_pump_or_coil_alarm": "Water pump/coil alarm"
+          "UNKNOWN": "Unknown",
+          "CHANGE_EXTRACT_AIR_FILTER": "Change extract air filter",
+          "CHANGE_OUTDOOR_AIR_FILTER": "Change outdoor air filter",
+          "COMPRESSOR_FAILURE": "Compressor failure",
+          "COMPRESSOR_OFF_AIRFLOW": "Heat pump stopped due to insufficient airflow",
+          "COMPRESSOR_OFF_MALFUNCTION": "Heat pump is not working or is malfunctioning",
+          "COMPRESSOR_OFF_TEMPERATURE": "Compressor off",
+          "ELECTRIC_HEATER_OFF": "Electric heater off",
+          "EVAPORATOR_ICING": "Evaporator icing",
+          "HIGH_PRESSURE_ON_COMPRESSOR": "High pressure on compressor",
+          "LOW_EXTRACT_AIRFLOW": "Low extract air flow",
+          "LOW_HEAT_EXCHANGER_EFFICIENCY": "Low heat exchanger efficiency",
+          "LOW_PRESSURE_ON_COMPRESSOR": "Low pressure on compressor",
+          "LOW_SUPPLY_AIRFLOW": "Low supply air flow",
+          "SERVICE_MODE": "Service mode",
+          "SERVICE_TIME": "Service time",
+          "VAV_CALIBRATION_FAIL": "VAV calibration fail",
+          "WATER_PUMP_OR_COIL_ALARM": "Water pump/coil alarm"
         }
       },
       "active_alarms": {

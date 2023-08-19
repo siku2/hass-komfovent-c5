@@ -19,29 +19,29 @@
       "op_mode": {
         "name": "Modus",
         "state": {
-          "unknown": "Unbekannt",
-          "comfort1": "Komfort 1",
-          "comfort2": "Komfort 2",
-          "economy1": "Sparsam 1",
-          "economy2": "Sparsam 2",
-          "special": "Spezial",
-          "program": "Programm"
+          "UNKNOWN": "Unbekannt",
+          "COMFORT1": "Komfort 1",
+          "COMFORT2": "Komfort 2",
+          "ECONOMY1": "Sparsam 1",
+          "ECONOMY2": "Sparsam 2",
+          "SPECIAL": "Spezial",
+          "PROGRAM": "Programm"
         }
       },
       "flow_control_mode": {
         "name": "Flow Steuerungsmodus",
         "state": {
-          "cav": "Konstantes Luftvolumen ",
-          "vav": "Variables Luftvolumen",
-          "dcv": "Bedarfsgesteuerte Lüftung"
+          "CAV": "Konstantes Luftvolumen ",
+          "VAV": "Variables Luftvolumen",
+          "DCV": "Bedarfsgesteuerte Lüftung"
         }
       },
       "temperature_control_mode": {
         "name": "Temperatur Steuerungsmodus",
         "state": {
-          "supply": "Zuluft",
-          "extract": "Abluft",
-          "room": "Raum"
+          "SUPPLY": "Zuluft",
+          "EXTRACT": "Abluft",
+          "ROOM": "Raum"
         }
       }
     },
@@ -49,24 +49,24 @@
       "active_alarm": {
         "name": "Aktiver Alarm {position}",
         "state": {
-          "unknown": "Unbekannt",
-          "change_extract_air_filter": "Abluft Filter wechseln",
-          "change_outdoor_air_filter": "Außenluft Filter wechseln",
-          "compressor_failure": "Kompressor Fehler",
-          "compressor_off_airflow": "Wärmepumpe steht wegen unzureichendem Luftstrom still",
-          "compressor_off_malfunction": "Kompressor Fehler",
-          "compressor_off_temperature": "Kompressor aus",
-          "electric_heater_off": "Elektrischer Erhitzer aus",
-          "evaporator_icing": "Vereisung des Verdampfers",
-          "high_pressure_on_compressor": "Hoher Kompressor Druck",
-          "low_extract_airflow": "Niedriger Abluftstrom",
-          "low_heat_exchanger_efficiency": "Niedriger Wärmetauscher-Wirkungsgrad",
-          "low_pressure_on_compressor": "Niedriger Kompressor Druck",
-          "low_supply_airflow": "Niedriger Zuluftstrom",
-          "service_mode": "Service Modus",
-          "service_time": "Service Zeit",
-          "vav_calibration_fail": "VAV Kalibrierungsfehler",
-          "water_pump_or_coil_alarm": "Wasserpumpe / Register Alarm"
+          "UNKNOWN": "Unbekannt",
+          "CHANGE_EXTRACT_AIR_FILTER": "Abluft Filter wechseln",
+          "CHANGE_OUTDOOR_AIR_FILTER": "Außenluft Filter wechseln",
+          "COMPRESSOR_FAILURE": "Kompressor Fehler",
+          "COMPRESSOR_OFF_AIRFLOW": "Wärmepumpe steht wegen unzureichendem Luftstrom still",
+          "COMPRESSOR_OFF_MALFUNCTION": "Kompressor Fehler",
+          "COMPRESSOR_OFF_TEMPERATURE": "Kompressor aus",
+          "ELECTRIC_HEATER_OFF": "Elektrischer Erhitzer aus",
+          "EVAPORATOR_ICING": "Vereisung des Verdampfers",
+          "HIGH_PRESSURE_ON_COMPRESSOR": "Hoher Kompressor Druck",
+          "LOW_EXTRACT_AIRFLOW": "Niedriger Abluftstrom",
+          "LOW_HEAT_EXCHANGER_EFFICIENCY": "Niedriger Wärmetauscher-Wirkungsgrad",
+          "LOW_PRESSURE_ON_COMPRESSOR": "Niedriger Kompressor Druck",
+          "LOW_SUPPLY_AIRFLOW": "Niedriger Zuluftstrom",
+          "SERVICE_MODE": "Service Modus",
+          "SERVICE_TIME": "Service Zeit",
+          "VAV_CALIBRATION_FAIL": "VAV Kalibrierungsfehler",
+          "WATER_PUMP_OR_COIL_ALARM": "Wasserpumpe / Register Alarm"
         }
       },
       "active_alarms": {
