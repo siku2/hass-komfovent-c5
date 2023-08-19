@@ -30,7 +30,7 @@ class Alarm:
 
     @classmethod
     def consume_list_from_registers(cls, count: int, registers: Iterator[int]):
-        alarms = []
+        alarms: list["Alarm"] = []
         for _ in range(count):
             code = consume_u16(registers)
             alarm = cls.lookup(code)

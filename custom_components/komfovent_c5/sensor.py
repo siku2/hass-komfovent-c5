@@ -1,13 +1,12 @@
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    DEVICE_CLASS_PRESSURE,
-    DEVICE_CLASS_TEMPERATURE,
-    PERCENTAGE,
-    PRESSURE_PA,
-    TEMP_CELSIUS,
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
 )
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import PERCENTAGE, PRESSURE_PA, TEMP_CELSIUS, EntityCategory
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
 from . import KomfoventCoordinator, KomfoventEntity
@@ -16,7 +15,7 @@ from .const import DOMAIN
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> bool:
     coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
     alarm_sensors = (
@@ -72,15 +71,24 @@ async def async_setup_entry(
 
 
 class AlarmActiveSensor(KomfoventEntity, SensorEntity):
-    _number: int
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = "active_alarm"
 
     def __init__(self, coordinator: KomfoventCoordinator, number: int) -> None:
         super().__init__(coordinator)
         self._number = number
 
     @property
-    def name(self) -> str:
-        return f"{super().name} Active Alarm {self._number}"
+    def name(self) -> str | None:
+        name_translation_key = self._name_translation_key
+        if name_translation_key is None:
+            return None
+        name_template: str | None = self.platform.platform_translations.get(
+            name_translation_key
+        )
+        if name_template is None:
+            return None
+        return name_template.format(position=self._number + 1)
 
     @property
     def unique_id(self) -> str:
@@ -96,7 +104,8 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         if alarm := self._alarm:
-            return alarm.message
+            return alarm.message.lower()
+        return None
 
     @property
     def extra_state_attributes(self):
@@ -113,141 +122,82 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
 
 
 class AlarmActiveCountSensor(KomfoventEntity, SensorEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Active Alarms"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 0
+    _attr_translation_key = "active_alarms"
 
     @property
     def native_value(self) -> StateType:
         return len(self._active_alarms)
 
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
-
 
 class AlarmHistoryCountSensor(KomfoventEntity, SensorEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Alarms in History"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 0
+    _attr_translation_key = "alarms_in_history"
 
     @property
     def native_value(self) -> StateType:
         return len(self._alarm_history)
 
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
-
 
 class FlowMetaSensor(KomfoventEntity, SensorEntity):
-    @property
-    def icon(self) -> str:
-        return "mdi:air-filter"
+    _attr_icon = "mdi:air-filter"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
     def native_unit_of_measurement(self) -> str:
         return self.coordinator.settings_state.flow_units.unit_symbol()
 
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
-
 
 class PercentageMetaSensor(KomfoventEntity, SensorEntity):
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return PERCENTAGE
-
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
 
 class TemperatureMetaSensor(KomfoventEntity, SensorEntity):
-    @property
-    def device_class(self) -> str:
-        return DEVICE_CLASS_TEMPERATURE
-
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return TEMP_CELSIUS
-
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_native_unit_of_measurement = TEMP_CELSIUS
 
 
 class VavSensorsRange(KomfoventEntity, SensorEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} VAV Sensors Range"
-
-    @property
-    def device_class(self) -> str:
-        return DEVICE_CLASS_PRESSURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_device_class = SensorDeviceClass.PRESSURE
+    _attr_native_unit_of_measurement = PRESSURE_PA
+    _attr_translation_key = "vav_sensors_range"
 
     @property
     def native_value(self) -> StateType:
         return self._modes_state.vav_sensors_range
 
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return PRESSURE_PA
-
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
-
 
 class NominalSupplyPressure(KomfoventEntity, SensorEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Nominal Supply Pressure"
-
-    @property
-    def device_class(self) -> str:
-        return DEVICE_CLASS_PRESSURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_device_class = SensorDeviceClass.PRESSURE
+    _attr_native_unit_of_measurement = PRESSURE_PA
+    _attr_translation_key = "nominal_supply_pressure"
 
     @property
     def native_value(self) -> StateType:
         return self._modes_state.nominal_supply_pressure
 
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return PRESSURE_PA
-
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
-
 
 class NominalExhaustPressure(KomfoventEntity, SensorEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Nominal Exhaust Pressure"
-
-    @property
-    def device_class(self) -> str:
-        return DEVICE_CLASS_PRESSURE
+    _attr_device_class = SensorDeviceClass.PRESSURE
+    _attr_native_unit_of_measurement = PRESSURE_PA
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_translation_key = "nominal_exhaust_pressure"
 
     @property
     def native_value(self) -> StateType:
         return self._modes_state.nominal_exhaust_pressure
 
-    @property
-    def native_unit_of_measurement(self) -> str:
-        return PRESSURE_PA
-
-    @property
-    def state_class(self) -> str:
-        return SensorStateClass.MEASUREMENT
-
 
 class ActiveModeSupplyFlow(FlowMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Active Mode Supply Flow"
+    _attr_translation_key = "active_mode_supply_flow"
 
     @property
     def native_value(self) -> StateType:
@@ -257,9 +207,7 @@ class ActiveModeSupplyFlow(FlowMetaSensor):
 
 
 class ActiveModeExtractFlow(FlowMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Active Mode Extract Flow"
+    _attr_translation_key = "active_mode_extract_flow"
 
     @property
     def native_value(self) -> StateType:
@@ -269,9 +217,7 @@ class ActiveModeExtractFlow(FlowMetaSensor):
 
 
 class ActiveModeTemperatureSetpoint(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Active Mode Temperature Setpoint"
+    _attr_translation_key = "active_mode_temperature_setpoint"
 
     @property
     def native_value(self) -> StateType:
@@ -285,9 +231,7 @@ class ActiveModeTemperatureSetpoint(TemperatureMetaSensor):
 
 # Extract airflow
 class ExtractAirflowSetpoint(FlowMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Extract airflow Setpoint"
+    _attr_translation_key = "extract_airflow_setpoint"
 
     @property
     def native_value(self) -> StateType:
@@ -295,9 +239,7 @@ class ExtractAirflowSetpoint(FlowMetaSensor):
 
 
 class ExtractAirflowActual(FlowMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Extract airflow Actual"
+    _attr_translation_key = "extract_airflow_actual"
 
     @property
     def native_value(self) -> StateType:
@@ -305,9 +247,7 @@ class ExtractAirflowActual(FlowMetaSensor):
 
 
 class ExtractAirflowFanLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Extract airflow Fan level"
+    _attr_translation_key = "extract_airflow_fan_level"
 
     @property
     def native_value(self) -> StateType:
@@ -316,9 +256,7 @@ class ExtractAirflowFanLevel(PercentageMetaSensor):
 
 # Exhaust temperature
 class ExhaustTemperature(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Exhaust temperature"
+    _attr_translation_key = "exhaust_temperature"
 
     @property
     def native_value(self) -> StateType:
@@ -327,9 +265,7 @@ class ExhaustTemperature(TemperatureMetaSensor):
 
 # Extract temperature
 class ExtractTemperatureSetpoint(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Extract temperature Setpoint"
+    _attr_translation_key = "extract_temperature_setpoint"
 
     @property
     def native_value(self) -> StateType:
@@ -337,9 +273,7 @@ class ExtractTemperatureSetpoint(TemperatureMetaSensor):
 
 
 class ExtractTemperatureActual(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Extract temperature Actual"
+    _attr_translation_key = "extract_temperature_actual"
 
     @property
     def native_value(self) -> StateType:
@@ -350,9 +284,7 @@ class ExtractTemperatureActual(TemperatureMetaSensor):
 
 
 class SupplyTemperatureSetpoint(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Supply temperature Setpoint"
+    _attr_translation_key = "supply_temperature_setpoint"
 
     @property
     def native_value(self) -> StateType:
@@ -360,9 +292,7 @@ class SupplyTemperatureSetpoint(TemperatureMetaSensor):
 
 
 class SupplyTemperatureActual(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Supply temperature Actual"
+    _attr_translation_key = "supply_temperature_actual"
 
     @property
     def native_value(self) -> StateType:
@@ -371,9 +301,7 @@ class SupplyTemperatureActual(TemperatureMetaSensor):
 
 # Outdoot temperature
 class OutdoorTemperature(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Outdoor temperature"
+    _attr_translation_key = "outdoor_temperature"
 
     @property
     def native_value(self) -> StateType:
@@ -382,9 +310,7 @@ class OutdoorTemperature(TemperatureMetaSensor):
 
 # Heat exchanger
 class HeatExchangerLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Heat exchanger Level"
+    _attr_translation_key = "heat_exchanger_level"
 
     @property
     def native_value(self) -> StateType:
@@ -392,9 +318,7 @@ class HeatExchangerLevel(PercentageMetaSensor):
 
 
 class HeatExchangerEfficiency(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Heat exchanger Efficiency"
+    _attr_translation_key = "heat_exchanger_efficiency"
 
     @property
     def native_value(self) -> StateType:
@@ -403,9 +327,7 @@ class HeatExchangerEfficiency(PercentageMetaSensor):
 
 # Internal supply temperature
 class InternalSupplyTemperature(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Internal supply temperature"
+    _attr_translation_key = "internal_supply_temperature"
 
     @property
     def native_value(self) -> StateType:
@@ -414,9 +336,7 @@ class InternalSupplyTemperature(TemperatureMetaSensor):
 
 # Supply airflow
 class SupplyAirflowSetpoint(FlowMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Supply airflow Setpoint"
+    _attr_translation_key = "supply_airflow_setpoint"
 
     @property
     def native_value(self) -> StateType:
@@ -424,9 +344,7 @@ class SupplyAirflowSetpoint(FlowMetaSensor):
 
 
 class SupplyAirflowActual(FlowMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Supply airflow Actual"
+    _attr_translation_key = "supply_airflow_actual"
 
     @property
     def native_value(self) -> StateType:
@@ -434,9 +352,7 @@ class SupplyAirflowActual(FlowMetaSensor):
 
 
 class SupplyAirflowFanLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Supply airflow Fan level"
+    _attr_translation_key = "supply_airflow_fan_level"
 
     @property
     def native_value(self) -> StateType:
@@ -445,9 +361,7 @@ class SupplyAirflowFanLevel(PercentageMetaSensor):
 
 # Return water temperature
 class ReturnWaterTemperature(TemperatureMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Return water temperature"
+    _attr_translation_key = "return_water_temperature"
 
     @property
     def native_value(self) -> StateType:
@@ -456,9 +370,7 @@ class ReturnWaterTemperature(TemperatureMetaSensor):
 
 # Air heaters/coolers
 class ElectricalHeaterLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Electrical heater Level"
+    _attr_translation_key = "electrical_heater_level"
 
     @property
     def native_value(self) -> StateType:
@@ -466,9 +378,7 @@ class ElectricalHeaterLevel(PercentageMetaSensor):
 
 
 class WaterHeaterLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Water heater Level"
+    _attr_translation_key = "water_heater_level"
 
     @property
     def native_value(self) -> StateType:
@@ -476,9 +386,7 @@ class WaterHeaterLevel(PercentageMetaSensor):
 
 
 class DxLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} DX level"
+    _attr_translation_key = "dx_level"
 
     @property
     def native_value(self) -> StateType:
@@ -486,9 +394,7 @@ class DxLevel(PercentageMetaSensor):
 
 
 class HeatpumpLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Heat-pump level"
+    _attr_translation_key = "heatpump_level"
 
     @property
     def native_value(self) -> StateType:
@@ -496,9 +402,7 @@ class HeatpumpLevel(PercentageMetaSensor):
 
 
 class WaterCoolerLevel(PercentageMetaSensor):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Water cooler Level"
+    _attr_translation_key = "water_cooler_level"
 
     @property
     def native_value(self) -> StateType:

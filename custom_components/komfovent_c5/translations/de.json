@@ -13,5 +13,157 @@
     "error": {
       "connect_failed": "Verbindung fehlgeschlagen"
     }
+  },
+  "entity": {
+    "select": {
+      "op_mode": {
+        "name": "Modus",
+        "state": {
+          "unknown": "Unbekannt",
+          "comfort1": "Komfort 1",
+          "comfort2": "Komfort 2",
+          "economy1": "Sparsam 1",
+          "economy2": "Sparsam 2",
+          "special": "Spezial",
+          "program": "Programm"
+        }
+      },
+      "flow_control_mode": {
+        "name": "Flow Steuerungsmodus",
+        "state": {
+          "cav": "Konstantes Luftvolumen ",
+          "vav": "Variables Luftvolumen",
+          "dcv": "Bedarfsgesteuerte Lüftung"
+        }
+      },
+      "temperature_control_mode": {
+        "name": "Temperatur Steuerungsmodus",
+        "state": {
+          "supply": "Zuluft",
+          "extract": "Abluft",
+          "room": "Raum"
+        }
+      }
+    },
+    "sensor": {
+      "active_alarm": {
+        "name": "Aktiver Alarm {position}",
+        "state": {
+          "unknown": "Unbekannt",
+          "change_extract_air_filter": "Abluft Filter wechseln",
+          "change_outdoor_air_filter": "Außenluft Filter wechseln",
+          "compressor_failure": "Kompressor Fehler",
+          "compressor_off_airflow": "Wärmepumpe steht wegen unzureichendem Luftstrom still",
+          "compressor_off_malfunction": "Kompressor Fehler",
+          "compressor_off_temperature": "Kompressor aus",
+          "electric_heater_off": "Elektrischer Erhitzer aus",
+          "evaporator_icing": "Vereisung des Verdampfers",
+          "high_pressure_on_compressor": "Hoher Kompressor Druck",
+          "low_extract_airflow": "Niedriger Abluftstrom",
+          "low_heat_exchanger_efficiency": "Niedriger Wärmetauscher-Wirkungsgrad",
+          "low_pressure_on_compressor": "Niedriger Kompressor Druck",
+          "low_supply_airflow": "Niedriger Zuluftstrom",
+          "service_mode": "Service Modus",
+          "service_time": "Service Zeit",
+          "vav_calibration_fail": "VAV Kalibrierungsfehler",
+          "water_pump_or_coil_alarm": "Wasserpumpe / Register Alarm"
+        }
+      },
+      "active_alarms": {
+        "name": "Aktive Alarme"
+      },
+      "alarms_in_history": {
+        "name": "Total Anzahl Alarme"
+      },
+      "active_mode_extract_flow": {
+        "name": "Aktiver Modus Extraktfluss"
+      },
+      "active_mode_supply_flow": {
+        "name": "Aktiver Modus Versorgungsfluss"
+      },
+      "active_mode_temperature_setpoint": {
+        "name": "Aktiver Modus Temperatursollwert"
+      },
+      "dx_level": {
+        "name": "Dx Stufe"
+      },
+      "electrical_heater_level": {
+        "name": "Elektrische Heizstufe"
+      },
+      "exhaust_temperature": {
+        "name": "Extraktfluss Temperatur"
+      },
+      "extract_airflow_actual": {
+        "name": "Abluft"
+      },
+      "extract_airflow_fan_level": {
+        "name": "Abluft Ventilatorstufe"
+      },
+      "extract_airflow_setpoint": {
+        "name": "Abluft Sollwert"
+      },
+      "extract_temperature_actual": {
+        "name": "Abluft Temperatur"
+      },
+      "extract_temperature_setpoint": {
+        "name": "Abluft Temperature Sollwert"
+      },
+      "heat_exchanger_efficiency": {
+        "name": "Wärmetauscher Effizienz"
+      },
+      "heat_exchanger_level": {
+        "name": "Wärmetauscher Stufe"
+      },
+      "heatpump_level": {
+        "name": "Wärmepumpe Stufe"
+      },
+      "internal_supply_temperature": {
+        "name": "Interne Zuluft Temperatur"
+      },
+      "nominal_exhaust_pressure": {
+        "name": "Nomineller Abluftdruck"
+      },
+      "nominal_supply_pressure": {
+        "name": "Nomineller Zuluftdruck"
+      },
+      "outdoor_temperature": {
+        "name": "Außentemperatur"
+      },
+      "return_water_temperature": {
+        "name": "Rücklaufwassertemperatur"
+      },
+      "supply_airflow_actual": {
+        "name": "Zuluftstrom"
+      },
+      "supply_airflow_fan_level": {
+        "name": "Zuluftventilator Stufe"
+      },
+      "supply_airflow_setpoint": {
+        "name": "Zuluftstrom Sollwert"
+      },
+      "supply_temperature_actual": {
+        "name": "Zuluft Temperatur"
+      },
+      "supply_temperature_setpoint": {
+        "name": "Zuluft Temperatur Sollwert"
+      },
+      "vav_sensors_range": {
+        "name": "VAV Sensor Bereich"
+      },
+      "water_cooler_level": {
+        "name": "Wasserkühler Stufe"
+      },
+      "water_heater_level": {
+        "name": "Warmwasserbereiter Stufe"
+      }
+    },
+    "switch": {
+      "ahu_control": {
+        "name": "Ahu Kontrolle"
+      },
+      "ocv_control": {
+        "name": "Ocv Kontrolle"
+      }
+    }
   }
 }

@@ -41,6 +41,7 @@ class OperationMode(enum.IntEnum):
             cls.ECONOMY1,
             cls.ECONOMY2,
             cls.SPECIAL,
+            cls.PROGRAM,
         )
 
 

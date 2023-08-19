@@ -3,18 +3,11 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_IDENTIFIERS,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
-    ATTR_NAME,
-    ATTR_SW_VERSION,
-    CONF_HOST,
-    CONF_PORT,
-)
+from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -100,7 +93,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
         await self.client.disconnect()
 
 
-async def setup_coordinator(hass, entry: ConfigEntry) -> None:
+async def setup_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> None:
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
 
@@ -136,11 +129,24 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-class KomfoventEntity(CoordinatorEntity):
-    coordinator: KomfoventCoordinator
-
+class KomfoventEntity(CoordinatorEntity[KomfoventCoordinator]):
     def __init__(self, coordinator: KomfoventCoordinator) -> None:
         super().__init__(coordinator)
+
+        settings = self.coordinator.settings_state
+
+        self._attr_has_entity_name = True
+        self._attr_unique_id = (
+            f"{DOMAIN}-{settings.ahu_serial_number}-{type(self).__qualname__}"
+        )
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, settings.ahu_serial_number)},
+            name=settings.ahu_name,
+            manufacturer="KOMFOVENT",
+            model="RHP 400 V C5",
+            # TODO read controller firmware version from service regs
+            sw_version="v1",
+        )
 
     @property
     def _active_alarms(self) -> list[Alarm]:
@@ -169,24 +175,3 @@ class KomfoventEntity(CoordinatorEntity):
     @property
     def _monitoring_state(self) -> MonitoringState:
         return self.coordinator.data.monitoring
-
-    @property
-    def name(self) -> str:
-        return self.coordinator.settings_state.ahu_name
-
-    @property
-    def device_info(self) -> dict:
-        settings = self.coordinator.settings_state
-        return {
-            ATTR_IDENTIFIERS: {(DOMAIN, settings.ahu_serial_number)},
-            ATTR_NAME: settings.ahu_name,
-            ATTR_MANUFACTURER: "KOMFOVENT",
-            ATTR_MODEL: "RHP 400 V C5",
-            # TODO read controller firmware version from service regs
-            ATTR_SW_VERSION: "v1",
-        }
-
-    @property
-    def unique_id(self) -> str:
-        settings = self.coordinator.settings_state
-        return f"{DOMAIN}-{settings.ahu_serial_number}-{type(self).__qualname__}"

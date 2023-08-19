@@ -17,7 +17,9 @@ ERR_CONNECT_FAILED = "connect_failed"
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    async def async_step_user(self, user_input: dict[str, Any] = None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
         errors = {}
         if user_input is not None:
             host: str = user_input[CONF_HOST]

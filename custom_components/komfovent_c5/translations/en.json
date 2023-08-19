@@ -13,5 +13,157 @@
     "error": {
       "connect_failed": "Failed to connect"
     }
+  },
+  "entity": {
+    "select": {
+      "op_mode": {
+        "name": "Operation Mode",
+        "state": {
+          "unknown": "Unknown",
+          "comfort1": "Comfort 1",
+          "comfort2": "Comfort 2",
+          "economy1": "Economy 1",
+          "economy2": "Economy 2",
+          "special": "Special",
+          "program": "Program"
+        }
+      },
+      "flow_control_mode": {
+        "name": "Flow Control Mode",
+        "state": {
+          "cav": "Constant Air Volume",
+          "vav": "Variable Air Volume",
+          "dcv": "Demand Controlled Ventilation"
+        }
+      },
+      "temperature_control_mode": {
+        "name": "Temperature Control Mode",
+        "state": {
+          "supply": "Supply",
+          "extract": "Extract",
+          "room": "Room"
+        }
+      }
+    },
+    "sensor": {
+      "active_alarm": {
+        "name": "Active Alarm {position}",
+        "state": {
+          "unknown": "Unknown",
+          "change_extract_air_filter": "Change extract air filter",
+          "change_outdoor_air_filter": "Change outdoor air filter",
+          "compressor_failure": "Compressor failure",
+          "compressor_off_airflow": "Heat pump stopped due to insufficient airflow",
+          "compressor_off_malfunction": "Heat pump is not working or is malfunctioning",
+          "compressor_off_temperature": "Compressor off",
+          "electric_heater_off": "Electric heater off",
+          "evaporator_icing": "Evaporator icing",
+          "high_pressure_on_compressor": "High pressure on compressor",
+          "low_extract_airflow": "Low extract air flow",
+          "low_heat_exchanger_efficiency": "Low heat exchanger efficiency",
+          "low_pressure_on_compressor": "Low pressure on compressor",
+          "low_supply_airflow": "Low supply air flow",
+          "service_mode": "Service mode",
+          "service_time": "Service time",
+          "vav_calibration_fail": "VAV calibration fail",
+          "water_pump_or_coil_alarm": "Water pump/coil alarm"
+        }
+      },
+      "active_alarms": {
+        "name": "Active Alarms"
+      },
+      "alarms_in_history": {
+        "name": "Alarms in History"
+      },
+      "active_mode_extract_flow": {
+        "name": "Active Mode Extract Flow"
+      },
+      "active_mode_supply_flow": {
+        "name": "Active Mode Supply Flow"
+      },
+      "active_mode_temperature_setpoint": {
+        "name": "Active Mode Temperature Setpoint"
+      },
+      "dx_level": {
+        "name": "Dx Level"
+      },
+      "electrical_heater_level": {
+        "name": "Electrical Heater Level"
+      },
+      "exhaust_temperature": {
+        "name": "Exhaust Temperature"
+      },
+      "extract_airflow_actual": {
+        "name": "Extract Airflow"
+      },
+      "extract_airflow_fan_level": {
+        "name": "Extract Airflow Fan Level"
+      },
+      "extract_airflow_setpoint": {
+        "name": "Extract Airflow Setpoint"
+      },
+      "extract_temperature_actual": {
+        "name": "Extract Temperature"
+      },
+      "extract_temperature_setpoint": {
+        "name": "Extract Temperature Setpoint"
+      },
+      "heat_exchanger_efficiency": {
+        "name": "Heat Exchanger Efficiency"
+      },
+      "heat_exchanger_level": {
+        "name": "Heat Exchanger Level"
+      },
+      "heatpump_level": {
+        "name": "Heatpump Level"
+      },
+      "internal_supply_temperature": {
+        "name": "Internal Supply Temperature"
+      },
+      "nominal_exhaust_pressure": {
+        "name": "Nominal Exhaust Pressure"
+      },
+      "nominal_supply_pressure": {
+        "name": "Nominal Supply Pressure"
+      },
+      "outdoor_temperature": {
+        "name": "Outdoor Temperature"
+      },
+      "return_water_temperature": {
+        "name": "Return Water Temperature"
+      },
+      "supply_airflow_actual": {
+        "name": "Supply Airflow"
+      },
+      "supply_airflow_fan_level": {
+        "name": "Supply Airflow Fan Level"
+      },
+      "supply_airflow_setpoint": {
+        "name": "Supply Airflow Setpoint"
+      },
+      "supply_temperature_actual": {
+        "name": "Supply Temperature"
+      },
+      "supply_temperature_setpoint": {
+        "name": "Supply Temperature Setpoint"
+      },
+      "vav_sensors_range": {
+        "name": "VAV Sensors Range"
+      },
+      "water_cooler_level": {
+        "name": "Water Cooler Level"
+      },
+      "water_heater_level": {
+        "name": "Water Heater Level"
+      }
+    },
+    "switch": {
+      "ahu_control": {
+        "name": "Ahu Control"
+      },
+      "ocv_control": {
+        "name": "Ocv Control"
+      }
+    }
   }
 }

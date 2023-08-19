@@ -1,6 +1,7 @@
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import KomfoventCoordinator, KomfoventEntity
 from .api import FlowControlMode, OperationMode, TemperatureControlMode
@@ -8,7 +9,7 @@ from .const import DOMAIN
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> bool:
     coord: KomfoventCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
@@ -22,66 +23,44 @@ async def async_setup_entry(
 
 
 class OpModeSelect(KomfoventEntity, SelectEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Operation Mode"
-
-    @property
-    def device_class(self) -> str:
-        return f"{DOMAIN}__operation_mode"
+    _attr_translation_key = "op_mode"
+    _attr_options = [mode.name.lower() for mode in OperationMode.selectable_modes()]
 
     @property
     def current_option(self) -> str:
-        return self._modes_state.operation_mode.name
-
-    @property
-    def options(self) -> list[str]:
-        return [mode.name for mode in OperationMode.selectable_modes()]
+        return self._modes_state.operation_mode.name.lower()
 
     async def async_select_option(self, option: str) -> None:
         mode = OperationMode[option]
         await self._modes_client.set_operation_mode(mode)
+        await self.coordinator.async_request_refresh()
 
 
 class FlowControlModeSelect(KomfoventEntity, SelectEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Flow Control Mode"
-
-    @property
-    def device_class(self) -> str:
-        return f"{DOMAIN}__flow_control_mode"
+    _attr_translation_key = "flow_control_mode"
+    _attr_options = [mode.name.lower() for mode in FlowControlMode.__members__.values()]
 
     @property
     def current_option(self) -> str:
-        return self._modes_state.flow_control_mode.name
-
-    @property
-    def options(self) -> list[str]:
-        return list(FlowControlMode.__members__.keys())
+        return self._modes_state.flow_control_mode.name.lower()
 
     async def async_select_option(self, option: str) -> None:
         mode = FlowControlMode[option]
         await self._modes_client.set_flow_control_mode(mode)
+        await self.coordinator.async_request_refresh()
 
 
 class TempControlModeSelect(KomfoventEntity, SelectEntity):
-    @property
-    def name(self) -> str:
-        return f"{super().name} Temperature Control Mode"
-
-    @property
-    def device_class(self) -> str:
-        return f"{DOMAIN}__temperature_control_mode"
+    _attr_translation_key = "temperature_control_mode"
+    _attr_options = [
+        mode.name.lower() for mode in TemperatureControlMode.__members__.values()
+    ]
 
     @property
     def current_option(self) -> str:
-        return self._modes_state.temperature_control_mode.name
-
-    @property
-    def options(self) -> list[str]:
-        return list(TemperatureControlMode.__members__.keys())
+        return self._modes_state.temperature_control_mode.name.lower()
 
     async def async_select_option(self, option: str) -> None:
         mode = TemperatureControlMode[option]
         await self._modes_client.set_temperature_control_mode(mode)
+        await self.coordinator.async_request_refresh()

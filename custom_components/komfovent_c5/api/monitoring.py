@@ -104,7 +104,7 @@ class MonitoringState:
     water_cooler_pump: bool
     supply_flow_setpoint: float
     extract_flow_setpoint: float
-    internal_supply_temp: float
+    internal_supply_temp: float | None
     efficiencies_configuration: CountersEfficienciesConfiguration
     heat_exchanger_thermal_efficiency: int | None
     energy_saving: int | None
@@ -169,7 +169,9 @@ class MonitoringState:
         supply_flow_setpoint = consume_u32(registers) * units.common_factor()
         extract_flow_setpoint = consume_u32(registers) * units.common_factor()
         # reg: 2040
-        internal_supply_temp = consume_i16(registers) / 10.0
+        raw = consume_i16(registers)
+        # use 'None' if register is 0xFFFF
+        internal_supply_temp = None if raw == -0x8000 else raw / 10.0
 
         # reg: 2200
         efficiencies_configuration = (
