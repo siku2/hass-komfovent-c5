@@ -32,6 +32,9 @@
                 "files.trimTrailingWhitespace": true,
                 "[python]": {
                     "editor.defaultFormatter": "ms-python.black-formatter"
+                },
+                "python.analysis.diagnosticSeverityOverrides": {
+                    "reportMissingTypeStubs": "none"
                 }
             }
         }
