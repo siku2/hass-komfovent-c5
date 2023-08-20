@@ -8,7 +8,7 @@
 
 ## Installation
 
-1. Add this repository as a custom repository to HACS: <https://hacs.xyz/docs/faq/custom_repositories>
+1. Add this repository as a custom repository to HACS: [![Add Repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=siku2&repository=hass-komfovent-c5&category=integration)
 2. Use HACS to install the integration.
 3. Restart Home Assistant.
 4. Set up the integration using the UI: [![Add Integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=komfovent_c5)
