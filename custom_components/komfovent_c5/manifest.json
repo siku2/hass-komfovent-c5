@@ -12,6 +12,9 @@
   "documentation": "https://github.com/siku2/hass-komfovent-c5/wiki",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/siku2/hass-komfovent-c5/issues",
+  "loggers": [
+    "pymodbus"
+  ],
   "requirements": [],
   "version": "0.0.0",
   "zeroconf": []

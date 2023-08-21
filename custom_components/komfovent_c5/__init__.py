@@ -5,7 +5,6 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -13,21 +12,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from . import services
-from .api import (
-    Alarm,
-    AlarmHistoryEntry,
-    Alarms,
-    Client,
-    Functions,
-    FunctionsState,
-    Modes,
-    ModesState,
-    Monitoring,
-    MonitoringState,
-    Settings,
-    SettingsState,
-)
+from . import api, services
 from .const import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,77 +28,72 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
 
 @dataclasses.dataclass()
 class KomfoventState:
-    active_alarms: list[Alarm]
-    alarm_history: list[AlarmHistoryEntry]
-    functions: FunctionsState
-    modes: ModesState
-    monitoring: MonitoringState
+    active_alarms: list[api.Alarm]
+    alarm_history: list[api.AlarmHistoryEntry]
+    functions: api.FunctionsState
+    modes: api.ModesState
+    monitoring: api.MonitoringState
 
     @classmethod
-    async def read_all(cls, client: Client, settings: SettingsState):
-        alarms = Alarms(client)
+    async def read_all(cls, client: api.Client, settings: api.SettingsState):
+        alarms = api.Alarms(client)
         return cls(
             active_alarms=await alarms.read_active(),
             alarm_history=await alarms.read_history(),
-            functions=await Functions(client).read_all(),
-            modes=await Modes(client).read_all(),
-            monitoring=await Monitoring(client).read_all(units=settings.flow_units),
+            functions=await api.Functions(client).read_all(),
+            modes=await api.Modes(client).read_all(),
+            monitoring=await api.Monitoring(client).read_all(units=settings.flow_units),
         )
 
 
 class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
-    client: Client
-    settings_state: SettingsState
     host_id: str
 
-    async def __fetch_data(self) -> KomfoventState:
-        return await KomfoventState.read_all(self.client, self.settings_state)
-
-    async def _initalize(self, client: Client, entry: ConfigEntry) -> None:
-        self.client = client
-        self.settings_state = await Settings(client).read_all()
-        self.host_id = f"{entry.data[CONF_HOST]}:{entry.data[CONF_PORT]}"
-
-        self.update_method = self.__fetch_data
-        await self.async_refresh()
-
-    @classmethod
-    async def build(cls, hass: HomeAssistant, client: Client, entry: ConfigEntry):
-        coordinator = cls(
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        client: api.Client,
+    ) -> None:
+        super().__init__(
             hass,
-            _LOGGER,
-            name="state",
+            logger=_LOGGER,
+            name=DOMAIN,
             update_interval=timedelta(seconds=30),
         )
-        await coordinator._initalize(client, entry)
+        self.__client = client
+        self.__settings: api.SettingsState | None = None
 
-        return coordinator
+        host, port = client.host_and_port
+        self.host_id = f"{host}:{port}"
 
-    async def destroy(self) -> None:
+    @property
+    def client(self) -> api.Client:
+        return self.__client
+
+    @property
+    def settings_state(self) -> api.SettingsState:
+        assert self.__settings
+        return self.__settings
+
+    async def _async_update_data(self) -> KomfoventState:
+        await self.__client.connect()
+        if self.__settings is None:
+            self.__settings = await api.Settings(self.__client).read_all()
+
+        return await KomfoventState.read_all(self.client, self.settings_state)
+
+    async def async_shutdown(self) -> None:
+        await super().async_shutdown()
         await self.client.disconnect()
 
 
-async def setup_coordinator(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
 
-    _LOGGER.info("connecting to '%s:%d'", host, port)
-    try:
-        client = await Client.connect(host, port, connect_timeout=10.0)
-    except Exception as exc:
-        raise ConfigEntryNotReady() from exc
-
-    coordinator = await KomfoventCoordinator.build(
-        hass,
-        client,
-        entry,
-    )
+    coordinator = KomfoventCoordinator(hass, api.Client(host=host, port=port))
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id] = coordinator
-
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    await setup_coordinator(hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -124,7 +104,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         coordinator: KomfoventCoordinator | None = hass.data[DOMAIN].pop(entry.entry_id)
         if coordinator:
-            await coordinator.destroy()
+            await coordinator.async_shutdown()
 
     return unload_ok
 
@@ -149,29 +129,29 @@ class KomfoventEntity(CoordinatorEntity[KomfoventCoordinator]):
         )
 
     @property
-    def _active_alarms(self) -> list[Alarm]:
+    def _active_alarms(self) -> list[api.Alarm]:
         return self.coordinator.data.active_alarms
 
     @property
-    def _alarm_history(self) -> list[AlarmHistoryEntry]:
+    def _alarm_history(self) -> list[api.AlarmHistoryEntry]:
         return self.coordinator.data.alarm_history
 
     @property
-    def _functions_client(self) -> Functions:
-        return Functions(self.coordinator.client)
+    def _functions_client(self) -> api.Functions:
+        return api.Functions(self.coordinator.client)
 
     @property
-    def _functions_state(self) -> FunctionsState:
+    def _functions_state(self) -> api.FunctionsState:
         return self.coordinator.data.functions
 
     @property
-    def _modes_client(self) -> Modes:
-        return Modes(self.coordinator.client)
+    def _modes_client(self) -> api.Modes:
+        return api.Modes(self.coordinator.client)
 
     @property
-    def _modes_state(self) -> ModesState:
+    def _modes_state(self) -> api.ModesState:
         return self.coordinator.data.modes
 
     @property
-    def _monitoring_state(self) -> MonitoringState:
+    def _monitoring_state(self) -> api.MonitoringState:
         return self.coordinator.data.monitoring

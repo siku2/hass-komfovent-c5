@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry
 
-from .api import Alarms, ConfigurationFlags, Modes, OperationMode
+from . import api
 from .const import DOMAIN
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ ATTR_TEMPERATURE = "temperature"
 ATTR_VALUE = "value"
 
 DEVICE_SCHEMA = vol.Any(vol.All(cv.ensure_list, [vol.Any(cv.dynamic_template, str)]))
-MODE_SCHEMA = vol.Any(cv.enum(OperationMode), None)
+MODE_SCHEMA = vol.Any(cv.enum(api.OperationMode), None)
 
 
 def coordinators_in_call(
@@ -56,12 +56,12 @@ SET_SETPOINT_TEMPERATURE_SCHEMA = vol.Schema(
 
 async def set_setpoint_temperature(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])
-    mode: OperationMode = call.data[ATTR_MODE] or OperationMode.SPECIAL
+    mode: api.OperationMode = call.data[ATTR_MODE] or api.OperationMode.SPECIAL
     temperature: float = call.data[ATTR_TEMPERATURE]
 
     for device_id, coordinator in coordinators_in_call(hass, device_ids):
         try:
-            mode_regs = Modes(coordinator.client).mode_registers(mode)
+            mode_regs = api.Modes(coordinator.client).mode_registers(mode)
             await mode_regs.set_setpoint_temperature(temperature)
         except Exception:
             _LOGGER.exception(
@@ -80,12 +80,12 @@ SET_SUPPLY_FLOW_SCHEMA = vol.Schema(
 
 async def set_supply_flow(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])
-    mode: OperationMode = call.data[ATTR_MODE] or OperationMode.SPECIAL
+    mode: api.OperationMode = call.data[ATTR_MODE] or api.OperationMode.SPECIAL
     value: int = call.data[ATTR_VALUE]
 
     for device_id, coordinator in coordinators_in_call(hass, device_ids):
         try:
-            mode_regs = Modes(coordinator.client).mode_registers(mode)
+            mode_regs = api.Modes(coordinator.client).mode_registers(mode)
             await mode_regs.set_supply_flow(value)
         except Exception:
             _LOGGER.exception("failed to set supply flow for device id %s", device_id)
@@ -96,12 +96,12 @@ SET_EXTRACT_FLOW_SCHEMA = SET_SUPPLY_FLOW_SCHEMA
 
 async def set_extract_flow(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])
-    mode: OperationMode = call.data[ATTR_MODE] or OperationMode.SPECIAL
+    mode: api.OperationMode = call.data[ATTR_MODE] or api.OperationMode.SPECIAL
     value: int = call.data[ATTR_VALUE]
 
     for device_id, coordinator in coordinators_in_call(hass, device_ids):
         try:
-            mode_regs = Modes(coordinator.client).mode_registers(mode)
+            mode_regs = api.Modes(coordinator.client).mode_registers(mode)
             await mode_regs.set_extract_flow(value)
         except Exception:
             _LOGGER.exception("failed to set extract flow for device id %s", device_id)
@@ -128,8 +128,10 @@ async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> Non
     heating: bool | None = call.data["heating"]
 
     def maybe_set_bit(
-        flags: ConfigurationFlags, flag: ConfigurationFlags, control: bool | None
-    ) -> ConfigurationFlags:
+        flags: api.ConfigurationFlags,
+        flag: api.ConfigurationFlags,
+        control: bool | None,
+    ) -> api.ConfigurationFlags:
         if control is True:
             return flags | flag
         elif control is False:
@@ -139,17 +141,21 @@ async def set_special_mode_config(hass: HomeAssistant, call: ServiceCall) -> Non
 
     for device_id, coordinator in coordinators_in_call(hass, device_ids):
         try:
-            mode_regs = Modes(coordinator.client).mode_registers(OperationMode.SPECIAL)
+            mode_regs = api.Modes(coordinator.client).mode_registers(
+                api.OperationMode.SPECIAL
+            )
             flags = await mode_regs.configuration()
             flags = maybe_set_bit(
-                flags, ConfigurationFlags.DEHUMIDIFYING, dehumidifying
+                flags, api.ConfigurationFlags.DEHUMIDIFYING, dehumidifying
             )
-            flags = maybe_set_bit(flags, ConfigurationFlags.HUMIDIFYING, humidifying)
             flags = maybe_set_bit(
-                flags, ConfigurationFlags.RECIRCULATION, recirculation
+                flags, api.ConfigurationFlags.HUMIDIFYING, humidifying
             )
-            flags = maybe_set_bit(flags, ConfigurationFlags.COOLING, cooling)
-            flags = maybe_set_bit(flags, ConfigurationFlags.HEATING, heating)
+            flags = maybe_set_bit(
+                flags, api.ConfigurationFlags.RECIRCULATION, recirculation
+            )
+            flags = maybe_set_bit(flags, api.ConfigurationFlags.COOLING, cooling)
+            flags = maybe_set_bit(flags, api.ConfigurationFlags.HEATING, heating)
             _LOGGER.info("setting config for device id %s: %s", device_id, flags)
             await mode_regs.set_configuration(flags)
         except Exception:
@@ -167,7 +173,7 @@ async def reset_active_alarms(hass: HomeAssistant, call: ServiceCall) -> None:
     device_ids = set(call.data[ATTR_DEVICE])
     for device_id, coordinator in coordinators_in_call(hass, device_ids):
         try:
-            alarms = Alarms(coordinator.client)
+            alarms = api.Alarms(coordinator.client)
             _LOGGER.info("resetting active alarms for device id %s: %s", device_id)
             await alarms.reset_active()
         except Exception:

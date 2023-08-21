@@ -8,7 +8,7 @@ from homeassistant.const import CONF_BASE, CONF_HOST, CONF_PORT
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 
-from .api import Client
+from . import api
 from .const import DOMAIN
 
 logger = logging.getLogger(__name__)
@@ -24,10 +24,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             host: str = user_input[CONF_HOST]
             port: int = user_input[CONF_PORT]
+            client = api.Client(host=host, port=port)
 
             try:
-                client = await Client.connect(host, port, connect_timeout=10.0)
-            except asyncio.TimeoutError:
+                await client.connect(connect_timeout=10.0)
+            except (asyncio.TimeoutError, ConnectionError):
                 errors[CONF_BASE] = ERR_CONNECT_FAILED
             else:
                 await client.disconnect()

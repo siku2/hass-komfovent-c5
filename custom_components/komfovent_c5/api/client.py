@@ -2,8 +2,10 @@ import asyncio
 import ctypes
 import datetime
 import itertools
+import logging
 from collections.abc import Iterator
 from ipaddress import IPv4Address
+from typing import cast
 
 from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.register_read_message import ReadHoldingRegistersResponse
@@ -12,39 +14,55 @@ from pymodbus.register_write_message import (
     WriteSingleRegisterResponse,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class Client:
     _modbus: AsyncModbusTcpClient
     _lock: asyncio.Lock
 
-    @classmethod
-    async def connect(cls, host: str, port: int, connect_timeout: float | None = None):
-        modbus_client = AsyncModbusTcpClient(host, port)
-        if connect_timeout is not None:
-            modbus_client.comm_params.timeout_connect = connect_timeout
-        await modbus_client.connect()
+    def __init__(self, *, host: str, port: int) -> None:
+        self._modbus = AsyncModbusTcpClient(host, port, retry_on_empty=True)
+        self._lock = asyncio.Lock()
 
-        inst = cls()
-        inst._modbus = modbus_client
-        inst._lock = asyncio.Lock()
-        return inst
+    @property
+    def host_and_port(self) -> tuple[str, int]:
+        return (self._modbus.params.host, cast(int, self._modbus.params.port))
+
+    async def connect(self, connect_timeout: float | None = None) -> None:
+        if self._modbus.connected:
+            _LOGGER.debug(
+                "already connected to %s when 'connect' called", self.host_and_port
+            )
+            return
+        async with self._lock:
+            if connect_timeout is not None:
+                self._modbus.comm_params.timeout_connect = connect_timeout
+            _LOGGER.debug("connecting to %s", self.host_and_port)
+            await self._modbus.connect()
+            # the 'connect' function doesn't bubble the exception unfortunately
+            if not self._modbus.connected:
+                raise ConnectionError("failed to connect")
 
     async def disconnect(self) -> None:
         async with self._lock:
+            _LOGGER.debug("closing the connection")
             self._modbus.close()
 
     async def read_u16(self, address: int) -> int:
         async with self._lock:
-            read_response: ReadHoldingRegistersResponse = (
-                await self._modbus.read_holding_registers(address, count=1)
+            read_response = cast(
+                ReadHoldingRegistersResponse,
+                await self._modbus.read_holding_registers(address, count=1),
             )
         assert not read_response.isError()
         return read_response.registers[0]
 
     async def write_u16(self, address: int, value: int) -> None:
         async with self._lock:
-            write_response: WriteSingleRegisterResponse = (
-                await self._modbus.write_register(address, value & 0xFFFF)
+            write_response = cast(
+                WriteSingleRegisterResponse,
+                await self._modbus.write_register(address, value & 0xFFFF),
             )
         assert not write_response.isError()
 
@@ -60,8 +78,9 @@ class Client:
 
     async def read_u32(self, address: int) -> int:
         async with self._lock:
-            read_response: ReadHoldingRegistersResponse = (
-                await self._modbus.read_holding_registers(address, count=2)
+            read_response = cast(
+                ReadHoldingRegistersResponse,
+                await self._modbus.read_holding_registers(address, count=2),
             )
         assert not read_response.isError()
         return consume_u32(iter(read_response.registers))
@@ -70,17 +89,19 @@ class Client:
         low_register = value & 0x0000FFFF
         high_register = (value & 0xFFFF0000) >> 16
         async with self._lock:
-            write_response: WriteMultipleRegistersResponse = (
+            write_response = cast(
+                WriteMultipleRegistersResponse,
                 await self._modbus.write_registers(
                     address, (high_register, low_register)
-                )
+                ),
             )
         assert not write_response.isError()
 
     async def read_many_u16(self, address: int, count: int) -> list[int]:
         async with self._lock:
-            read_respones: ReadHoldingRegistersResponse = (
-                await self._modbus.read_holding_registers(address, count=count)
+            read_respones = cast(
+                ReadHoldingRegistersResponse,
+                await self._modbus.read_holding_registers(address, count=count),
             )
         assert not read_respones.isError()
         return read_respones.registers

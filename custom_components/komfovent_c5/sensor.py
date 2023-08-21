@@ -9,8 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
-from . import KomfoventCoordinator, KomfoventEntity
-from .api import Alarm, Alarms
+from . import KomfoventCoordinator, KomfoventEntity, api
 from .const import DOMAIN
 
 
@@ -26,7 +25,7 @@ async def async_setup_entry(
         )
     )
     active_alarm_sensors = (
-        AlarmActiveSensor(coord, i) for i in range(Alarms.MAX_ACTIVE_ALERTS)
+        AlarmActiveSensor(coord, i) for i in range(api.Alarms.MAX_ACTIVE_ALERTS)
     )
     diagram_sensors = (
         cls(coord)
@@ -95,7 +94,7 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
         return f"{super().unique_id}-{self._number}"
 
     @property
-    def _alarm(self) -> Alarm | None:
+    def _alarm(self) -> api.Alarm | None:
         active_alarms = self._active_alarms
         if self._number < len(active_alarms):
             return active_alarms[self._number]
