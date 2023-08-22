@@ -97,14 +97,27 @@ class Client:
             )
         assert not write_response.isError()
 
+    async def _read_batch(self, address: int, count: int) -> list[int]:
+        response = cast(
+            ReadHoldingRegistersResponse,
+            await self._modbus.read_holding_registers(address, count=count),
+        )
+        assert not response.isError()
+        return response.registers
+
     async def read_many_u16(self, address: int, count: int) -> list[int]:
+        registers: list[int] = []
         async with self._lock:
-            read_respones = cast(
-                ReadHoldingRegistersResponse,
-                await self._modbus.read_holding_registers(address, count=count),
-            )
-        assert not read_respones.isError()
-        return read_respones.registers
+            address_end = address + count
+            for batch_start in range(address, address_end, _MAX_REGISTERS_PER_READ):
+                batch_end = min(batch_start + _MAX_REGISTERS_PER_READ, address_end)
+                registers.extend(
+                    await self._read_batch(batch_start, count=batch_end - batch_start)
+                )
+        return registers
+
+
+_MAX_REGISTERS_PER_READ = 125
 
 
 def consume_u16(registers: Iterator[int]) -> int:
