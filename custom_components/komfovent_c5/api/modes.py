@@ -89,7 +89,7 @@ class ConfigurationFlags(enum.IntFlag):
         return cls(consume_u16(registers))
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class ModeState:
     supply_flow: int
     extract_flow: int
@@ -178,7 +178,7 @@ class SpecialMode(Mode):
         )
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class ModesState:
     ahu: bool
     operation_mode: OperationMode

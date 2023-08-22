@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class FunctionsState:
     ocv_enabled: bool
 

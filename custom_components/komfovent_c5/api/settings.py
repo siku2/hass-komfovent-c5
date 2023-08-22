@@ -41,7 +41,7 @@ class FlowUnits(enum.IntEnum):
         return 1.0
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class Rs485:
     class Speed(enum.IntEnum):
         S9600 = 0
@@ -83,7 +83,7 @@ class Language(enum.IntEnum):
         return cls(consume_u16(registers))
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class SettingsState:
     datetime: datetime
     language: Language

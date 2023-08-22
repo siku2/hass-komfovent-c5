@@ -65,7 +65,7 @@ class ActiveFunctions(enum.IntFlag):
         return cls(consume_u16(registers))
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class MonitoringState:
     c5_status: C5Status
     mode: OperationMode

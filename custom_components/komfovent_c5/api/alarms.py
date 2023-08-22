@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class Alarm:
     code: int
     message: str
@@ -39,7 +39,7 @@ class Alarm:
         return alarms
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class AlarmHistoryEntry:
     NUM_REGISTERS = 5
 
@@ -61,10 +61,9 @@ class AlarmHistoryEntry:
 
     @classmethod
     def consume_list_from_registers(cls, count: int, registers: Iterator[int]):
-        alarms = []
+        alarms: list[AlarmHistoryEntry] = []
         for _ in range(count):
-            alarm = cls.consume_from_registers(registers)
-            alarms.append(alarm)
+            alarms.append(cls.consume_from_registers(registers))
 
         return alarms
 
@@ -97,8 +96,11 @@ class Alarms:
     async def reset_active(self) -> None:
         await self._client.write_u16(self.REG_ACTIVE_ALARMS_COUNT, 0x99C5)
 
+    async def read_history_count(self) -> int:
+        return await self._client.read_u16(self.REG_HISTORY_COUNT)
+
     async def read_history(self) -> list[AlarmHistoryEntry]:
-        count = await self._client.read_u16(self.REG_HISTORY_COUNT)
+        count = await self.read_history_count()
         assert 0 <= count <= 50
         if count > 0:
             register_count = count * AlarmHistoryEntry.NUM_REGISTERS
