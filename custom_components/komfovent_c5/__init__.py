@@ -26,10 +26,10 @@ async def async_setup(hass: HomeAssistant, _config) -> bool:
     return True
 
 
-@dataclasses.dataclass()
+@dataclasses.dataclass(slots=True, kw_only=True)
 class KomfoventState:
     active_alarms: list[api.Alarm]
-    alarm_history: list[api.AlarmHistoryEntry]
+    alarm_history_count: int
     functions: api.FunctionsState
     modes: api.ModesState
     monitoring: api.MonitoringState
@@ -39,7 +39,7 @@ class KomfoventState:
         alarms = api.Alarms(client)
         return cls(
             active_alarms=await alarms.read_active(),
-            alarm_history=await alarms.read_history(),
+            alarm_history_count=await alarms.read_history_count(),
             functions=await api.Functions(client).read_all(),
             modes=await api.Modes(client).read_all(),
             monitoring=await api.Monitoring(client).read_all(units=settings.flow_units),
@@ -131,10 +131,6 @@ class KomfoventEntity(CoordinatorEntity[KomfoventCoordinator]):
     @property
     def _active_alarms(self) -> list[api.Alarm]:
         return self.coordinator.data.active_alarms
-
-    @property
-    def _alarm_history(self) -> list[api.AlarmHistoryEntry]:
-        return self.coordinator.data.alarm_history
 
     @property
     def _functions_client(self) -> api.Functions:

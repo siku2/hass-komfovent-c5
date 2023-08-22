@@ -139,7 +139,7 @@ class AlarmHistoryCountSensor(KomfoventEntity, SensorEntity):
 
     @property
     def native_value(self) -> StateType:
-        return len(self._alarm_history)
+        return self.coordinator.data.alarm_history_count
 
 
 class FlowMetaSensor(KomfoventEntity, SensorEntity):
