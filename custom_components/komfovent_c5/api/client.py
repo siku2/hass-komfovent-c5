@@ -20,14 +20,16 @@ _LOGGER = logging.getLogger(__name__)
 class Client:
     _modbus: AsyncModbusTcpClient
     _lock: asyncio.Lock
+    _addr: tuple[str, int]
 
     def __init__(self, *, host: str, port: int) -> None:
+        self._addr = (host, port)
         self._modbus = AsyncModbusTcpClient(host, port, retry_on_empty=True)
         self._lock = asyncio.Lock()
 
     @property
     def host_and_port(self) -> tuple[str, int]:
-        return (self._modbus.params.host, cast(int, self._modbus.params.port))
+        return self._addr
 
     async def connect(self, connect_timeout: float | None = None) -> None:
         if self._modbus.connected:

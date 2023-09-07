@@ -8,3 +8,4 @@ from .functions import *  # noqa: E402, F403
 from .modes import *  # noqa: E402, F403
 from .monitoring import *  # noqa: E402, F403
 from .settings import *  # noqa: E402, F403
+from .service import *  # noqa: E402, F403

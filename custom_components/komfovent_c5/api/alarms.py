@@ -101,7 +101,7 @@ class Alarms:
 
     async def read_history(self) -> list[AlarmHistoryEntry]:
         count = await self.read_history_count()
-        assert 0 <= count <= 50
+        assert 0 <= count <= self.MAX_HISTORY_ALERTS
         if count > 0:
             register_count = count * AlarmHistoryEntry.NUM_REGISTERS
             registers = await self._client.read_many_u16(

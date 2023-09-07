@@ -5,6 +5,7 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
@@ -75,12 +76,40 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
         assert self.__settings
         return self.__settings
 
+    @property
+    def device_info(self) -> DeviceInfo:
+        assert self.__device_info
+        return self.__device_info
+
     async def _async_update_data(self) -> KomfoventState:
         await self.__client.connect()
-        if self.__settings is None:
-            self.__settings = await api.Settings(self.__client).read_all()
-
         return await KomfoventState.read_all(self.client, self.settings_state)
+
+    async def _do_init(self) -> None:
+        await self.__client.connect()
+        self.__settings = await api.Settings(self.__client).read_all()
+
+        try:
+            sw_version = await api.Service(self.__client).read_firmware_version()
+            sw_version = f"{sw_version / 1000.0:.3f}"
+        except Exception:
+            _LOGGER.warn("failed to read firmware version", exc_info=True)
+            sw_version = None
+
+        self.__device_info = DeviceInfo(
+            identifiers={(DOMAIN, self.__settings.ahu_serial_number)},
+            name=self.__settings.ahu_name,
+            configuration_url=f"http://{self.__client.host_and_port[0]}",
+            manufacturer="KOMFOVENT",
+            sw_version=sw_version,
+        )
+
+    async def async_config_entry_first_refresh(self) -> None:
+        try:
+            await self._do_init()
+        except Exception as exc:
+            raise ConfigEntryNotReady from exc
+        await super().async_config_entry_first_refresh()
 
     async def async_shutdown(self) -> None:
         await super().async_shutdown()
@@ -116,17 +145,11 @@ class KomfoventEntity(CoordinatorEntity[KomfoventCoordinator]):
         settings = self.coordinator.settings_state
 
         self._attr_has_entity_name = True
+        # legacy unique id format for compatibility
         self._attr_unique_id = (
             f"{DOMAIN}-{settings.ahu_serial_number}-{type(self).__qualname__}"
         )
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, settings.ahu_serial_number)},
-            name=settings.ahu_name,
-            manufacturer="KOMFOVENT",
-            model="RHP 400 V C5",
-            # TODO read controller firmware version from service regs
-            sw_version="v1",
-        )
+        self._attr_device_info = self.coordinator.device_info
 
     @property
     def _active_alarms(self) -> list[api.Alarm]:
