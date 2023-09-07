@@ -5,5 +5,4 @@ default_config:
 logger:
   default: info
   logs:
-    aiohttp: debug
     custom_components.komfovent_c5: debug
