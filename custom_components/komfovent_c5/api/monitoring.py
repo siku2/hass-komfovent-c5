@@ -1,6 +1,5 @@
 import dataclasses
 import enum
-import itertools
 from collections.abc import Iterator
 
 from .client import Client, consume_i16, consume_u16, consume_u32
@@ -65,8 +64,8 @@ class ActiveFunctions(enum.IntFlag):
         return cls(consume_u16(registers))
 
 
-@dataclasses.dataclass(slots=True, kw_only=True)
-class MonitoringState:
+@dataclasses.dataclass(kw_only=True)
+class MonitoringStateBlock1:
     c5_status: C5Status
     mode: OperationMode
     supply_flow: float
@@ -104,27 +103,14 @@ class MonitoringState:
     water_cooler_pump: bool
     supply_flow_setpoint: float
     extract_flow_setpoint: float
+
+    # extended set
     internal_supply_temp: float | None
-    efficiencies_configuration: CountersEfficienciesConfiguration
-    heat_exchanger_thermal_efficiency: int | None
-    energy_saving: int | None
-    heat_exchanger_recovery: int | None
-    supply_sfp: float
-    exhaust_sfp: float
-    outdoor_air_filter_impurity_level: int
-    exhaust_air_filter_impurity_level: int
-    air_heater_operation_hours: int
-    supply_fan_operation_hours_or_kwh: int
-    exhaust_fan_operation_hours_or_kwh: int
-    supply_fan_power: int
-    exhaust_fan_power: int
-    active_functions: ActiveFunctions
-    air_cooler_operation_hours: int
-    heat_exchanger_operation_kwh: int
-    air_heater_operation_kwh: int
 
     @classmethod
-    def consume_from_registers(cls, registers: Iterator[int], *, units: FlowUnits):
+    def consume_from_registers(
+        cls, registers: Iterator[int], *, units: FlowUnits, is_extended: bool
+    ):
         # reg: 2000
         c5_status = C5Status.consume_from_registers(registers)
         mode = OperationMode.consume_from_registers(registers)
@@ -168,42 +154,14 @@ class MonitoringState:
         # reg: 2036
         supply_flow_setpoint = consume_u32(registers) * units.common_factor()
         extract_flow_setpoint = consume_u32(registers) * units.common_factor()
-        # reg: 2040
-        raw = consume_i16(registers)
-        # use 'None' if register is 0xFFFF
-        internal_supply_temp = None if raw == -0x8000 else raw / 10.0
 
-        # reg: 2200
-        efficiencies_configuration = (
-            CountersEfficienciesConfiguration.consume_from_registers(registers)
-        )
-        heat_exchanger_thermal_efficiency: int | None = consume_u16(registers)
-        if heat_exchanger_thermal_efficiency == 0xFF:
-            heat_exchanger_thermal_efficiency = None
-        energy_saving: int | None = consume_u16(registers)
-        if energy_saving == 0xFF:
-            energy_saving = None
-        # reg: 2203
-        heat_exchanger_recovery: int | None = consume_u32(registers)
-        if heat_exchanger_recovery == 0xFFFF_FFFF:
-            heat_exchanger_recovery = None
-        # reg: 2205
-        supply_sfp = consume_i16(registers) / 100.0
-        exhaust_sfp = consume_i16(registers) / 100.0
-        outdoor_air_filter_impurity_level = consume_u16(registers)
-        exhaust_air_filter_impurity_level = consume_u16(registers)
-        # reg: 2209
-        air_heater_operation_hours = consume_u32(registers)
-        supply_fan_operation_hours_or_kwh = consume_u32(registers)
-        exhaust_fan_operation_hours_or_kwh = consume_u32(registers)
-        # reg: 2215
-        supply_fan_power = consume_u16(registers)
-        exhaust_fan_power = consume_u16(registers)
-        active_functions = ActiveFunctions.consume_from_registers(registers)
-        # reg: 2218
-        air_cooler_operation_hours = consume_u32(registers)
-        heat_exchanger_operation_kwh = consume_u32(registers)
-        air_heater_operation_kwh = consume_u32(registers)
+        if is_extended:
+            # reg: 2040
+            raw = consume_i16(registers)
+            # use 'None' if register is 0xFFFF
+            internal_supply_temp = None if raw == -0x8000 else raw / 10.0
+        else:
+            internal_supply_temp = None
 
         return cls(
             c5_status=c5_status,
@@ -243,6 +201,64 @@ class MonitoringState:
             supply_flow_setpoint=supply_flow_setpoint,
             extract_flow_setpoint=extract_flow_setpoint,
             internal_supply_temp=internal_supply_temp,
+        )
+
+
+@dataclasses.dataclass(kw_only=True)
+class MonitoringStateBlock2:
+    efficiencies_configuration: CountersEfficienciesConfiguration
+    heat_exchanger_thermal_efficiency: int | None
+    energy_saving: int | None
+    heat_exchanger_recovery: int | None
+    supply_sfp: float
+    exhaust_sfp: float
+    outdoor_air_filter_impurity_level: int
+    exhaust_air_filter_impurity_level: int
+    air_heater_operation_hours: int
+    supply_fan_operation_hours_or_kwh: int
+    exhaust_fan_operation_hours_or_kwh: int
+    supply_fan_power: int
+    exhaust_fan_power: int
+    active_functions: ActiveFunctions
+    air_cooler_operation_hours: int
+    heat_exchanger_operation_kwh: int
+    air_heater_operation_kwh: int
+
+    @classmethod
+    def consume_from_registers(cls, registers: Iterator[int]):
+        # reg: 2200
+        efficiencies_configuration = (
+            CountersEfficienciesConfiguration.consume_from_registers(registers)
+        )
+        heat_exchanger_thermal_efficiency: int | None = consume_u16(registers)
+        if heat_exchanger_thermal_efficiency == 0xFF:
+            heat_exchanger_thermal_efficiency = None
+        energy_saving: int | None = consume_u16(registers)
+        if energy_saving == 0xFF:
+            energy_saving = None
+        # reg: 2203
+        heat_exchanger_recovery: int | None = consume_u32(registers)
+        if heat_exchanger_recovery == 0xFFFF_FFFF:
+            heat_exchanger_recovery = None
+        # reg: 2205
+        supply_sfp = consume_i16(registers) / 100.0
+        exhaust_sfp = consume_i16(registers) / 100.0
+        outdoor_air_filter_impurity_level = consume_u16(registers)
+        exhaust_air_filter_impurity_level = consume_u16(registers)
+        # reg: 2209
+        air_heater_operation_hours = consume_u32(registers)
+        supply_fan_operation_hours_or_kwh = consume_u32(registers)
+        exhaust_fan_operation_hours_or_kwh = consume_u32(registers)
+        # reg: 2215
+        supply_fan_power = consume_u16(registers)
+        exhaust_fan_power = consume_u16(registers)
+        active_functions = ActiveFunctions.consume_from_registers(registers)
+        # reg: 2218
+        air_cooler_operation_hours = consume_u32(registers)
+        heat_exchanger_operation_kwh = consume_u32(registers)
+        air_heater_operation_kwh = consume_u32(registers)
+
+        return cls(
             efficiencies_configuration=efficiencies_configuration,
             heat_exchanger_thermal_efficiency=heat_exchanger_thermal_efficiency,
             energy_saving=energy_saving,
@@ -263,10 +279,21 @@ class MonitoringState:
         )
 
 
+@dataclasses.dataclass(kw_only=True)
+class MonitoringState(MonitoringStateBlock1, MonitoringStateBlock2):
+    @classmethod
+    def combine(cls, block1: MonitoringStateBlock1, block2: MonitoringStateBlock2):
+        return cls(**dataclasses.asdict(block1), **dataclasses.asdict(block2))
+
+
 class Monitoring:
+    # block 1
     REG_C5_STATUS = 1999
+    REG_EXTRACT_FLOW_SETPOINT = 2037
+    # extended set
     REG_INTERNAL_SUPPLY_TEMP = 2039
-    # some empty registers in between
+
+    # block 2
     REG_COUNTERS_EFFICIENCIES_CONFIG = 2199
     REG_AIR_HEATER_OPERATION_ENERGY = 2221
 
@@ -275,12 +302,26 @@ class Monitoring:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def read_all(self, *, units: FlowUnits) -> MonitoringState:
-        regs1 = await self._client.read_many_u16(
-            self.REG_C5_STATUS,
-            (self.REG_INTERNAL_SUPPLY_TEMP - self.REG_C5_STATUS) + 1,
+    async def read_block1(
+        self, *, units: FlowUnits, is_extended: bool
+    ) -> MonitoringStateBlock1:
+        end = (
+            self.REG_INTERNAL_SUPPLY_TEMP
+            if is_extended
+            else (self.REG_EXTRACT_FLOW_SETPOINT + 1)
         )
-        regs2 = await self._client.read_many_u16(
+        registers = await self._client.read_many_u16(
+            self.REG_C5_STATUS,
+            (end - self.REG_C5_STATUS) + 1,
+        )
+        return MonitoringStateBlock1.consume_from_registers(
+            iter(registers),
+            units=units,
+            is_extended=is_extended,
+        )
+
+    async def read_block2(self) -> MonitoringStateBlock2:
+        registers = await self._client.read_many_u16(
             self.REG_COUNTERS_EFFICIENCIES_CONFIG,
             (
                 (self.REG_AIR_HEATER_OPERATION_ENERGY + 1)
@@ -288,6 +329,9 @@ class Monitoring:
             )
             + 1,
         )
-        return MonitoringState.consume_from_registers(
-            itertools.chain(regs1, regs2), units=units
-        )
+        return MonitoringStateBlock2.consume_from_registers(iter(registers))
+
+    async def read_all(self, *, units: FlowUnits, is_extended: bool) -> MonitoringState:
+        block1 = await self.read_block1(units=units, is_extended=is_extended)
+        block2 = await self.read_block2()
+        return MonitoringState.combine(block1, block2)

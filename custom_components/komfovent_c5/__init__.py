@@ -36,14 +36,18 @@ class KomfoventState:
     monitoring: api.MonitoringState
 
     @classmethod
-    async def read_all(cls, client: api.Client, settings: api.SettingsState):
+    async def read_all(
+        cls, client: api.Client, settings: api.SettingsState, *, is_extended: bool
+    ):
         alarms = api.Alarms(client)
         return cls(
             active_alarms=await alarms.read_active(),
             alarm_history_count=await alarms.read_history_count(),
             functions=await api.Functions(client).read_all(),
-            modes=await api.Modes(client).read_all(),
-            monitoring=await api.Monitoring(client).read_all(units=settings.flow_units),
+            modes=await api.Modes(client).read_all(is_extended=is_extended),
+            monitoring=await api.Monitoring(client).read_all(
+                units=settings.flow_units, is_extended=is_extended
+            ),
         )
 
 
@@ -63,6 +67,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
         )
         self.__client = client
         self.__settings: api.SettingsState | None = None
+        self.__is_extended = False
 
         host, port = client.host_and_port
         self.host_id = f"{host}:{port}"
@@ -83,18 +88,22 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
 
     async def _async_update_data(self) -> KomfoventState:
         await self.__client.connect()
-        return await KomfoventState.read_all(self.client, self.settings_state)
+        return await KomfoventState.read_all(
+            self.client, self.settings_state, is_extended=self.__is_extended
+        )
 
     async def _do_init(self) -> None:
         await self.__client.connect()
-        self.__settings = await api.Settings(self.__client).read_all()
+        self.__settings = await api.Settings(self.__client).read_all(is_extended=False)
 
         try:
-            sw_version = await api.Service(self.__client).read_firmware_version()
-            sw_version = f"{sw_version / 1000.0:.3f}"
+            fw_version = await api.Service(self.__client).read_firmware_version()
+            sw_version = f"{fw_version / 1000.0:.3f}"
         except Exception:
             _LOGGER.warn("failed to read firmware version", exc_info=True)
             sw_version = None
+        else:
+            self.__is_extended = api.determine_is_extended(version=fw_version)
 
         self.__device_info = DeviceInfo(
             identifiers={(DOMAIN, self.__settings.ahu_serial_number)},
@@ -103,6 +112,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
             manufacturer="KOMFOVENT",
             sw_version=sw_version,
         )
+        _LOGGER.info("ahu extended: %s", self.__is_extended)
 
     async def async_config_entry_first_refresh(self) -> None:
         try:

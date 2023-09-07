@@ -33,9 +33,6 @@ class Client:
 
     async def connect(self, connect_timeout: float | None = None) -> None:
         if self._modbus.connected:
-            _LOGGER.debug(
-                "already connected to %s when 'connect' called", self.host_and_port
-            )
             return
         async with self._lock:
             if connect_timeout is not None:

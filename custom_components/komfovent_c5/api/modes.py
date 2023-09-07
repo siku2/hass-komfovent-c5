@@ -1,4 +1,3 @@
-import asyncio
 import dataclasses
 import enum
 from collections.abc import Iterator
@@ -185,14 +184,18 @@ class ModesState:
     flow_control_mode: FlowControlMode
     temperature_control_mode: TemperatureControlMode
     vav_status: VavStatus
-    vav_sensors_range: int
-    nominal_supply_pressure: int
-    nominal_exhaust_pressure: int
+
+    # extended set
+    vav_sensors_range: int | None
+    nominal_supply_pressure: int | None
+    nominal_exhaust_pressure: int | None
 
     modes: dict[OperationMode, ModeState]
 
     @classmethod
-    def consume_from_registers(cls, ahu: bool, registers: Iterator[int]):
+    def consume_from_registers(
+        cls, ahu: bool, registers: Iterator[int], *, is_extended: bool
+    ):
         operation_mode = OperationMode.consume_from_registers(registers)
         modes = {
             OperationMode.COMFORT1: ModeState.consume_from_registers(registers, False),
@@ -201,19 +204,31 @@ class ModesState:
             OperationMode.ECONOMY2: ModeState.consume_from_registers(registers, False),
             OperationMode.SPECIAL: ModeState.consume_from_registers(registers, True),
         }
+        flow_control_mode = FlowControlMode.consume_from_registers(registers)
+        temperature_control_mode = TemperatureControlMode.consume_from_registers(
+            registers
+        )
+        vav_status = VavStatus.consume_from_registers(registers)
+
+        if is_extended:
+            vav_sensors_range = consume_u16(registers)
+            nominal_supply_pressure = consume_u16(registers)
+            nominal_exhaust_pressure = consume_u16(registers)
+        else:
+            vav_sensors_range = None
+            nominal_supply_pressure = None
+            nominal_exhaust_pressure = None
 
         return cls(
             ahu=ahu,
             operation_mode=operation_mode,
             modes=modes,
-            flow_control_mode=FlowControlMode.consume_from_registers(registers),
-            temperature_control_mode=TemperatureControlMode.consume_from_registers(
-                registers
-            ),
-            vav_status=VavStatus.consume_from_registers(registers),
-            vav_sensors_range=consume_u16(registers),
-            nominal_supply_pressure=consume_u16(registers),
-            nominal_exhaust_pressure=consume_u16(registers),
+            flow_control_mode=flow_control_mode,
+            temperature_control_mode=temperature_control_mode,
+            vav_status=vav_status,
+            vav_sensors_range=vav_sensors_range,
+            nominal_supply_pressure=nominal_supply_pressure,
+            nominal_exhaust_pressure=nominal_exhaust_pressure,
         )
 
     @property
@@ -227,6 +242,8 @@ class Modes:
     REG_FLOW_CONTROL_MODE = 126
     REG_TEMPERATURE_CONTROL_MODE = 127
     REG_VAV_STATUS = 128
+
+    # extended set
     REG_VAV_SENSORS_RANGE = 129
     REG_NOMINAL_SUPPLY_PRESSURE = 130
     REG_NOMINAL_EXHAUST_PRESSURE = 131
@@ -236,15 +253,16 @@ class Modes:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def read_all(self) -> ModesState:
-        ahu, registers = await asyncio.gather(
-            self.ahu_on(),
-            self._client.read_many_u16(
-                self.REG_OPERATION_MODE,
-                (self.REG_NOMINAL_EXHAUST_PRESSURE - self.REG_OPERATION_MODE) + 1,
-            ),
+    async def read_all(self, *, is_extended: bool) -> ModesState:
+        ahu = await self.ahu_on()
+        end = self.REG_NOMINAL_EXHAUST_PRESSURE if is_extended else self.REG_VAV_STATUS
+        registers = await self._client.read_many_u16(
+            self.REG_OPERATION_MODE,
+            (end - self.REG_OPERATION_MODE) + 1,
         )
-        return ModesState.consume_from_registers(ahu, iter(registers))
+        return ModesState.consume_from_registers(
+            ahu, iter(registers), is_extended=is_extended
+        )
 
     async def ahu_on(self) -> bool:
         return bool(await self._client.read_u16(self.REG_AHU_ON))

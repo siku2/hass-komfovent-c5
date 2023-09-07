@@ -92,14 +92,16 @@ class SettingsState:
     flow_units: FlowUnits
     ahu_serial_number: str
     ahu_name: str
-    ip_mask: IPv4Address
-    rs_485: Rs485
-    daylight_saving_time: bool
-    bacnet_port: int
-    bacnet_id: int
+
+    # extended set
+    ip_mask: IPv4Address | None
+    rs_485: Rs485 | None
+    daylight_saving_time: bool | None
+    bacnet_port: int | None
+    bacnet_id: int | None
 
     @classmethod
-    def consume_from_registers(cls, registers: Iterator[int]):
+    def consume_from_registers(cls, registers: Iterator[int], *, is_extended: bool):
         time = consume_time(registers, read_seconds=True)
         # reg 451 is the day of week, which we don't need
         _ = consume_u16(registers)
@@ -110,13 +112,21 @@ class SettingsState:
         flow_units = FlowUnits.consume_from_registers(registers)
         ahu_serial_number = consume_string(registers, 8)
         ahu_name = consume_string(registers, 12)
-        ip_mask = consume_ip_address(registers)
-        rs_485 = Rs485.consume_from_registers(registers)
-        daylight_saving_time = bool(consume_u16(registers))
-        # reg 483 isn't documented, skip
-        _ = consume_u16(registers)
-        bacnet_port = consume_u16(registers)
-        bacnet_id = consume_u32(registers)
+
+        if is_extended:
+            ip_mask = consume_ip_address(registers)
+            rs_485 = Rs485.consume_from_registers(registers)
+            daylight_saving_time = bool(consume_u16(registers))
+            # reg 483 isn't documented, skip
+            _ = consume_u16(registers)
+            bacnet_port = consume_u16(registers)
+            bacnet_id = consume_u32(registers)
+        else:
+            ip_mask = None
+            rs_485 = None
+            daylight_saving_time = None
+            bacnet_port = None
+            bacnet_id = None
 
         return cls(
             datetime=datetime.combine(date, time),
@@ -146,6 +156,8 @@ class Settings:
     REG_FLOW_UNITS = 458
     REG_AHU_SN = 459
     REG_AHU_NAME = 467
+
+    # extended set
     REG_IP_MASK = 479
     REG_RS485 = 481
     REG_DST = 482
@@ -157,12 +169,15 @@ class Settings:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def read_all(self) -> SettingsState:
+    async def read_all(self, *, is_extended: bool) -> SettingsState:
+        end = (self.REG_BACNET_ID + 1) if is_extended else (self.REG_IP_MASK - 1)
         registers = await self._client.read_many_u16(
             self.REG_TIME,
-            ((self.REG_BACNET_ID + 1) - self.REG_TIME) + 1,
+            (end - self.REG_TIME) + 1,
         )
-        return SettingsState.consume_from_registers(iter(registers))
+        return SettingsState.consume_from_registers(
+            iter(registers), is_extended=is_extended
+        )
 
 
 _FLOW_UNIT_TO_SYMBOL = {
