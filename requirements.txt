@@ -1,6 +1,6 @@
 colorlog==6.7.0
 homeassistant==2023.8.3
-pip>=21.0,<23.3
+pip>=21.0,<23.4
 ruff==0.0.287
 # as specified by the home assistant modbus component
 pymodbus~=3.5.0
