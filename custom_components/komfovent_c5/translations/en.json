@@ -41,7 +41,8 @@
         "state": {
           "SUPPLY": "Supply",
           "EXTRACT": "Extract",
-          "ROOM": "Room"
+          "ROOM": "Room",
+          "BALANCE": "Balance"
         }
       }
     },

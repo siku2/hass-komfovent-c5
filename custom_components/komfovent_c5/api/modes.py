@@ -58,6 +58,7 @@ class TemperatureControlMode(enum.IntEnum):
     SUPPLY = 0
     EXTRACT = 1
     ROOM = 2
+    BALANCE = 3
 
     @classmethod
     def consume_from_registers(cls, registers: Iterator[int]):

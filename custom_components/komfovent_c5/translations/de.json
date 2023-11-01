@@ -41,7 +41,8 @@
         "state": {
           "SUPPLY": "Zuluft",
           "EXTRACT": "Abluft",
-          "ROOM": "Raum"
+          "ROOM": "Raum",
+          "BALANCE": "Ausgleich"
         }
       }
     },
