@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from typing import Any
 
@@ -28,7 +27,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 await client.connect(connect_timeout=10.0)
-            except (asyncio.TimeoutError, ConnectionError):
+            except (TimeoutError, ConnectionError):
                 errors[CONF_BASE] = ERR_CONNECT_FAILED
             else:
                 await client.disconnect()

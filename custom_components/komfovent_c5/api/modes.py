@@ -279,12 +279,10 @@ class Modes:
         await self._client.write_u16(self.REG_OPERATION_MODE, mode.value)
 
     @overload
-    def mode_registers(self, mode: Literal[OperationMode.SPECIAL]) -> SpecialMode:
-        ...
+    def mode_registers(self, mode: Literal[OperationMode.SPECIAL]) -> SpecialMode: ...
 
     @overload
-    def mode_registers(self, mode: OperationMode) -> Mode:
-        ...
+    def mode_registers(self, mode: OperationMode) -> Mode: ...
 
     def mode_registers(self, mode: OperationMode) -> Mode:
         reg_start = _OP_MODE_OFFSET[mode]

@@ -38,7 +38,7 @@ def coordinators_in_call(
             _LOGGER.warn("device not found: %s", device_id)
             continue
         for entry_id in device.config_entries:
-            coordinator: "KomfoventCoordinator" | None = domain_data.get(entry_id)
+            coordinator: KomfoventCoordinator | None = domain_data.get(entry_id)
             if not coordinator:
                 _LOGGER.warning("config entry has no coordinator: %s", entry_id)
                 continue
