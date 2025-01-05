@@ -1,4 +1,4 @@
 colorlog
 homeassistant==2025.1.0
-ruff==0.5.2
+ruff==0.8.6
 pymodbus
