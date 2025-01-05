@@ -4,7 +4,6 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_BASE, CONF_HOST, CONF_PORT
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import config_validation as cv
 
 from . import api
@@ -18,8 +17,8 @@ ERR_CONNECT_FAILED = "connect_failed"
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-        errors = {}
+    ) -> config_entries.ConfigFlowResult:
+        errors: dict[str, str] = {}
         if user_input is not None:
             host: str = user_input[CONF_HOST]
             port: int = user_input[CONF_PORT]

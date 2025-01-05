@@ -8,8 +8,10 @@ from ipaddress import IPv4Address
 from typing import cast
 
 from pymodbus.client import AsyncModbusTcpClient
-from pymodbus.register_read_message import ReadHoldingRegistersResponse
-from pymodbus.register_write_message import (
+from pymodbus.pdu.register_read_message import (
+    ReadHoldingRegistersResponse,
+)
+from pymodbus.pdu.register_write_message import (
     WriteMultipleRegistersResponse,
     WriteSingleRegisterResponse,
 )
@@ -24,7 +26,7 @@ class Client:
 
     def __init__(self, *, host: str, port: int) -> None:
         self._addr = (host, port)
-        self._modbus = AsyncModbusTcpClient(host, port, retry_on_empty=True)
+        self._modbus = AsyncModbusTcpClient(host, port=port)
         self._lock = asyncio.Lock()
 
     @property
@@ -91,7 +93,8 @@ class Client:
             write_response = cast(
                 WriteMultipleRegistersResponse,
                 await self._modbus.write_registers(
-                    address, (high_register, low_register)
+                    address,
+                    (high_register, low_register),  # type: ignore
                 ),
             )
         assert not write_response.isError()

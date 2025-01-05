@@ -1,4 +1,4 @@
-from .client import Client  # noqa: F401
+from .client import Client
 
 # import order matters
 ...
@@ -9,6 +9,8 @@ from .modes import *  # noqa: E402, F403
 from .monitoring import *  # noqa: E402, F403
 from .service import *  # noqa: E402, F403
 from .settings import *  # noqa: E402, F403
+
+_ = Client
 
 
 def determine_is_extended(*, version: int) -> bool:

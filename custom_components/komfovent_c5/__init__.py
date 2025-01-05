@@ -1,13 +1,14 @@
 import dataclasses
 import logging
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -18,10 +19,10 @@ from .const import DOMAIN, PLATFORMS
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
+CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)  # type: ignore
 
 
-async def async_setup(hass: HomeAssistant, _config) -> bool:
+async def async_setup(hass: HomeAssistant, _config: Any) -> bool:
     hass.data[DOMAIN] = {}
     await services.register(hass)
     return True
@@ -100,7 +101,7 @@ class KomfoventCoordinator(DataUpdateCoordinator[KomfoventState]):
             fw_version = await api.Service(self.__client).read_firmware_version()
             sw_version = f"{fw_version / 1000.0:.3f}"
         except Exception:
-            _LOGGER.warn("failed to read firmware version", exc_info=True)
+            _LOGGER.warning("failed to read firmware version", exc_info=True)
             sw_version = None
         else:
             self.__is_extended = api.determine_is_extended(version=fw_version)

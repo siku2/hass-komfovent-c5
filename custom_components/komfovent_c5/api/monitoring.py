@@ -280,7 +280,7 @@ class MonitoringStateBlock2:
 
 
 @dataclasses.dataclass(kw_only=True)
-class MonitoringState(MonitoringStateBlock1, MonitoringStateBlock2):
+class MonitoringState(MonitoringStateBlock1, MonitoringStateBlock2):  # type: ignore
     @classmethod
     def combine(cls, block1: MonitoringStateBlock1, block2: MonitoringStateBlock2):
         return cls(**dataclasses.asdict(block1), **dataclasses.asdict(block2))

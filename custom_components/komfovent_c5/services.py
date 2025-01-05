@@ -35,7 +35,7 @@ def coordinators_in_call(
     for device_id in device_ids:
         device = dev_reg.async_get(device_id)
         if not device:
-            _LOGGER.warn("device not found: %s", device_id)
+            _LOGGER.warning("device not found: %s", device_id)
             continue
         for entry_id in device.config_entries:
             coordinator: KomfoventCoordinator | None = domain_data.get(entry_id)

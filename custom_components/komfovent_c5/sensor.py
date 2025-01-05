@@ -1,10 +1,17 @@
+from typing import Any
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, PRESSURE_PA, TEMP_CELSIUS, EntityCategory
+from homeassistant.const import (
+    PERCENTAGE,
+    EntityCategory,
+    UnitOfPressure,
+    UnitOfTemperature,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -107,7 +114,7 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
         return None
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> dict[str, Any]:
         code_numeric = None
         code_str = None
         if alarm := self._alarm:
@@ -159,13 +166,13 @@ class PercentageMetaSensor(KomfoventEntity, SensorEntity):
 class TemperatureMetaSensor(KomfoventEntity, SensorEntity):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_device_class = SensorDeviceClass.TEMPERATURE
-    _attr_native_unit_of_measurement = TEMP_CELSIUS
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
 
 class VavSensorsRange(KomfoventEntity, SensorEntity):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_device_class = SensorDeviceClass.PRESSURE
-    _attr_native_unit_of_measurement = PRESSURE_PA
+    _attr_native_unit_of_measurement = UnitOfPressure.PA
     _attr_translation_key = "vav_sensors_range"
 
     @property
@@ -176,7 +183,7 @@ class VavSensorsRange(KomfoventEntity, SensorEntity):
 class NominalSupplyPressure(KomfoventEntity, SensorEntity):
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_device_class = SensorDeviceClass.PRESSURE
-    _attr_native_unit_of_measurement = PRESSURE_PA
+    _attr_native_unit_of_measurement = UnitOfPressure.PA
     _attr_translation_key = "nominal_supply_pressure"
 
     @property
@@ -186,7 +193,7 @@ class NominalSupplyPressure(KomfoventEntity, SensorEntity):
 
 class NominalExhaustPressure(KomfoventEntity, SensorEntity):
     _attr_device_class = SensorDeviceClass.PRESSURE
-    _attr_native_unit_of_measurement = PRESSURE_PA
+    _attr_native_unit_of_measurement = UnitOfPressure.PA
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_translation_key = "nominal_exhaust_pressure"
 
