@@ -5,16 +5,16 @@ import itertools
 import logging
 from collections.abc import Iterator
 from ipaddress import IPv4Address
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from pymodbus.client import AsyncModbusTcpClient
-from pymodbus.pdu.register_read_message import (
-    ReadHoldingRegistersResponse,
-)
-from pymodbus.pdu.register_write_message import (
-    WriteMultipleRegistersResponse,
-    WriteSingleRegisterResponse,
-)
+
+if TYPE_CHECKING:
+    from pymodbus.pdu.register_message import (
+        ReadHoldingRegistersResponse,
+        WriteMultipleRegistersResponse,
+        WriteSingleRegisterResponse,
+    )
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class Client:
     async def read_u16(self, address: int) -> int:
         async with self._lock:
             read_response = cast(
-                ReadHoldingRegistersResponse,
+                "ReadHoldingRegistersResponse",
                 await self._modbus.read_holding_registers(address, count=1),
             )
         assert not read_response.isError()
@@ -62,7 +62,7 @@ class Client:
     async def write_u16(self, address: int, value: int) -> None:
         async with self._lock:
             write_response = cast(
-                WriteSingleRegisterResponse,
+                "WriteSingleRegisterResponse",
                 await self._modbus.write_register(address, value & 0xFFFF),
             )
         assert not write_response.isError()
@@ -80,7 +80,7 @@ class Client:
     async def read_u32(self, address: int) -> int:
         async with self._lock:
             read_response = cast(
-                ReadHoldingRegistersResponse,
+                "ReadHoldingRegistersResponse",
                 await self._modbus.read_holding_registers(address, count=2),
             )
         assert not read_response.isError()
@@ -91,7 +91,7 @@ class Client:
         high_register = (value & 0xFFFF0000) >> 16
         async with self._lock:
             write_response = cast(
-                WriteMultipleRegistersResponse,
+                "WriteMultipleRegistersResponse",
                 await self._modbus.write_registers(
                     address,
                     (high_register, low_register),  # type: ignore
@@ -101,7 +101,7 @@ class Client:
 
     async def _read_batch(self, address: int, count: int) -> list[int]:
         response = cast(
-            ReadHoldingRegistersResponse,
+            "ReadHoldingRegistersResponse",
             await self._modbus.read_holding_registers(address, count=count),
         )
         assert not response.isError()
