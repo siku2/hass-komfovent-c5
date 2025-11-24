@@ -21,4 +21,4 @@ def determine_is_extended(*, version: int) -> bool:
     # Current working theory is that it's the version and v2 introduced a bunch of new registers across all models.
     #
     # for now this provides some additional compatibility until more users come along and provide further information.
-    return version >= 2000
+    return version > 2110
