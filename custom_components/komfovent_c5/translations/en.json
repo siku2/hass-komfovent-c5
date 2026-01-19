@@ -156,6 +156,9 @@
       },
       "water_heater_level": {
         "name": "Water Heater Level"
+      },
+      "air_quality_level": {
+        "name": "Air Quality Level"
       }
     },
     "switch": {
