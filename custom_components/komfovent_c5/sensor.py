@@ -420,7 +420,7 @@ class AirQualitySensorType(KomfoventEntity, SensorEntity):
     @property
     def native_value(self) -> StateType:
         # Return the name of the enum for better readability
-        return getattr(self._monitoring_state.air_quality_sensor_type, "name", str(self._monitoring_state.air_quality_sensor_type))
+        return self._monitoring_state.air_quality_sensor_type.name
 
 class AirQualityLevel(KomfoventEntity, SensorEntity):
     _attr_translation_key = "air_quality_level"
