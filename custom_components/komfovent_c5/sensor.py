@@ -58,6 +58,8 @@ async def async_setup_entry(
             DxLevel,
             HeatpumpLevel,
             WaterCoolerLevel,
+            AirQualityLevel,
+            AirQualitySensorType,
         )
     )
     async_add_entities(
