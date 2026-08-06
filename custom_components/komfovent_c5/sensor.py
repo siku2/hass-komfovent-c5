@@ -307,7 +307,7 @@ class SupplyTemperatureActual(TemperatureMetaSensor):
         return self._monitoring_state.supply_temp
 
 
-# Outdoot temperature
+# Outdoor temperature
 class OutdoorTemperature(TemperatureMetaSensor):
     _attr_translation_key = "outdoor_temperature"
 
@@ -416,6 +416,7 @@ class WaterCoolerLevel(PercentageMetaSensor):
     def native_value(self) -> StateType:
         return self._monitoring_state.water_cooler_level
 
+
 class AirQualitySensorType(KomfoventEntity, SensorEntity):
     _attr_translation_key = "air_quality_sensor_type"
 
@@ -423,6 +424,7 @@ class AirQualitySensorType(KomfoventEntity, SensorEntity):
     def native_value(self) -> StateType:
         # Return the name of the enum for better readability
         return self._monitoring_state.air_quality_sensor_type.name
+
 
 class AirQualityLevel(KomfoventEntity, SensorEntity):
     _attr_translation_key = "air_quality_level"
