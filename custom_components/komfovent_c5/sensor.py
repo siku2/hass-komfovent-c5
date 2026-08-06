@@ -91,8 +91,8 @@ class AlarmActiveSensor(KomfoventEntity, SensorEntity):
         name_translation_key = self._name_translation_key
         if name_translation_key is None:
             return None
-        name_template: str | None = self.platform.platform_translations.get(
-            name_translation_key
+        name_template: str | None = (
+            self.platform.platform_data.platform_translations.get(name_translation_key)
         )
         if name_template is None:
             return None
