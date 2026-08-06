@@ -37,7 +37,7 @@ class OpModeSelect(KomfoventEntity, SelectEntity):
 
 class FlowControlModeSelect(KomfoventEntity, SelectEntity):
     _attr_translation_key = "flow_control_mode"
-    _attr_options = [mode.name for mode in api.FlowControlMode.__members__.values()]
+    _attr_options = [mode.name for mode in api.FlowControlMode]
 
     @property
     def current_option(self) -> str:
@@ -51,9 +51,7 @@ class FlowControlModeSelect(KomfoventEntity, SelectEntity):
 
 class TempControlModeSelect(KomfoventEntity, SelectEntity):
     _attr_translation_key = "temperature_control_mode"
-    _attr_options = [
-        mode.name for mode in api.TemperatureControlMode.__members__.values()
-    ]
+    _attr_options = [mode.name for mode in api.TemperatureControlMode]
 
     @property
     def current_option(self) -> str:

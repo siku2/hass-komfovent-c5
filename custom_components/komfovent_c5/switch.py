@@ -41,10 +41,7 @@ class AhuControl(KomfoventEntity, SwitchEntity):
 
 class OcvControl(KomfoventEntity, SwitchEntity):
     _attr_translation_key = "ocv_control"
-
-    @property
-    def entity_category(self) -> EntityCategory:
-        return EntityCategory.CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
 
     @property
     def is_on(self) -> bool:
