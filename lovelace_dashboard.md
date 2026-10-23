@@ -1,6 +1,7 @@
-# Komfovent C5 Custom Lovelace Dashboard Card for Home Assistant
+# Komfovent C5 Custom Animated Lovelace Dashboard Card for Home Assistant
 
 This guide explains how to install and configure a native, responsive SVG-based custom Lovelace card (`komfovent-card`) to monitor and control a Komfovent C5 ventilation unit (AHU/VMC) integrated via Modbus TCP in Home Assistant.
+<img width="3864" height="1848" alt="immagine" src="https://github.com/user-attachments/assets/8bda84c9-6ba8-4895-9a86-f62958b1908a" />
 
 ## Key Benefits Over `picture-elements`
 
