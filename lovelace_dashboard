@@ -1,0 +1,365 @@
+# Komfovent C5 Custom Lovelace Dashboard Card for Home Assistant
+
+This guide explains how to install and configure a native, responsive SVG-based custom Lovelace card (`komfovent-card`) to monitor and control a Komfovent C5 ventilation unit (AHU/VMC) integrated via Modbus TCP in Home Assistant.
+
+## Key Benefits Over `picture-elements`
+
+* **100% Vector (SVG):** Eliminates alignment errors, clipping, and aspect-ratio distortion on smartphones and desktop browsers alike.
+* **Theme-Aware:** Automatically adapts border, background, and text colors to light and dark themes using native Home Assistant CSS variables.
+* **Hardware-Accelerated Animations:** Smooth CSS rotations for both fans and the heat recovery rotor, proportional to live operating speeds.
+* **Fully Dynamic Configuration:** No hardcoded entities in the JavaScript source. All entity mappings and options are configured directly via Lovelace YAML.
+* **Zero External Dependencies:** Does not require `card-mod` or external background raster images.
+
+---
+
+## 1. Installation
+
+### Step 1: Create the Custom Card File
+
+1. Access your Home Assistant configuration directory (using the Studio Code Server add-on, File Editor, SSH, or Samba share).
+2. Inside the `/config/www/` folder, create (or replace) a file named `komfovent-card.js`.
+3. Paste the following JavaScript code into `/config/www/komfovent-card.js`:
+
+```javascript
+class KomfoventCard extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  setConfig(config) {
+    if (!config) {
+      throw new Error('Invalid configuration');
+    }
+
+    // Read dynamic entity mappings passed from Lovelace YAML
+    this._config = {
+      title: config.title || '',
+      // Temperature sensors
+      t_outdoor: config.t_outdoor || null,
+      t_supply: config.t_supply || null,
+      t_extract: config.t_extract || null,
+      t_exhaust: config.t_exhaust || null,
+      // Temperature setpoints
+      set_supply: config.set_supply || null,
+      set_extract: config.set_extract || null,
+      // Airflow measurements
+      flow_supply: config.flow_supply || null,
+      flow_extract: config.flow_extract || null,
+      // Fan speed percentages
+      fan_supply: config.fan_supply || null,
+      fan_extract: config.fan_extract || null,
+      // Rotary heat exchanger
+      rotor: config.rotor || null,
+      efficiency: config.efficiency || null,
+      // Post-heater
+      heater: config.heater || null,
+      // Air quality index
+      aqi: config.aqi || null,
+    };
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this.render();
+  }
+
+  getVal(entityId, decimals = 1) {
+    if (!this._hass || !entityId || !this._hass.states[entityId]) return null;
+    const s = this._hass.states[entityId].state;
+    if (s === 'unknown' || s === 'unavailable') return null;
+    const v = parseFloat(s);
+    return isNaN(v) ? null : v.toFixed(decimals);
+  }
+
+  getRaw(entityId) {
+    if (!this._hass || !entityId || !this._hass.states[entityId]) return null;
+    const s = this._hass.states[entityId].state;
+    return (s === 'unknown' || s === 'unavailable') ? null : s;
+  }
+
+  render() {
+    if (!this._hass || !this._config) return;
+
+    // Retrieve live values from configured entities
+    const tOutdoor = this.getVal(this._config.t_outdoor);
+    const tSupply = this.getVal(this._config.t_supply);
+    const tExtract = this.getVal(this._config.t_extract);
+    const tExhaust = this.getVal(this._config.t_exhaust);
+
+    const setSupply = this.getVal(this._config.set_supply);
+    const setExtract = this.getVal(this._config.set_extract);
+
+    const flowSupply = this.getVal(this._config.flow_supply, 0);
+    const flowExtract = this.getVal(this._config.flow_extract, 0);
+
+    const fanSupply = parseFloat(this.getVal(this._config.fan_supply, 1) || 0);
+    const fanExtract = parseFloat(this.getVal(this._config.fan_extract, 1) || 0);
+    const rotorLevel = parseFloat(this.getVal(this._config.rotor, 1) || 0);
+    const heaterLevel = parseFloat(this.getVal(this._config.heater, 0) || 0);
+
+    const aqi = this.getRaw(this._config.aqi);
+
+    let eff = this.getRaw(this._config.efficiency);
+    if (eff !== null) {
+      const effNum = parseFloat(eff);
+      eff = isNaN(effNum) ? eff : `${effNum.toFixed(1)}%`;
+    }
+
+    // Dynamic rotation timing (seconds per rotation)
+    const durFanExhaust = fanExtract > 0 ? Math.max(0.4, 3.5 / (fanExtract / 25)) : 0;
+    const durFanSupply = fanSupply > 0 ? Math.max(0.4, 3.5 / (fanSupply / 25)) : 0;
+    const durRotor = rotorLevel > 0 ? Math.max(0.7, 4.5 / (rotorLevel / 20)) : 0;
+
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: block;
+        }
+        ha-card {
+          padding: 16px;
+          border-radius: var(--ha-card-border-radius, 16px);
+          background: var(--ha-card-background, var(--card-background-color, #fff));
+          box-shadow: var(--ha-card-box-shadow, none);
+          box-sizing: border-box;
+          font-family: inherit;
+        }
+        .card-header {
+          font-size: 1.2rem;
+          font-weight: 500;
+          color: var(--primary-text-color);
+          margin-bottom: 12px;
+        }
+        .svg-container {
+          width: 100%;
+          position: relative;
+        }
+        svg {
+          width: 100%;
+          height: auto;
+          display: block;
+          overflow: visible;
+        }
+
+        .txt-title { font-size: 13px; font-weight: bold; }
+        .txt-sub { font-size: 11px; fill: var(--secondary-text-color, #757575); }
+        .txt-val { font-size: 11px; font-weight: bold; fill: var(--primary-text-color, #212121); }
+        .txt-label { font-size: 13px; font-weight: bold; fill: var(--primary-text-color, #424242); }
+
+        .c-exhaust { fill: #ff9800; }
+        .c-extract { fill: #ffb74d; }
+        .c-outdoor { fill: #03a9f4; }
+        .c-supply { fill: #4caf50; }
+
+        .wireframe { stroke: var(--divider-color, #ccc); fill: none; }
+        .box-component { fill: var(--card-background-color, #fff); stroke: var(--primary-text-color, #333); stroke-width: 1.5; }
+        
+        @keyframes spin {
+          100% { transform: rotate(360deg); }
+        }
+        .fan-exhaust {
+          transform-origin: 240px 105px;
+          ${durFanExhaust > 0 ? `animation: spin ${durFanExhaust}s linear infinite;` : ''}
+        }
+        .fan-supply {
+          transform-origin: 460px 195px;
+          ${durFanSupply > 0 ? `animation: spin ${durFanSupply}s linear infinite;` : ''}
+        }
+        .rotor-spin {
+          transform-origin: 350px 150px;
+          ${durRotor > 0 ? `animation: spin ${durRotor}s linear infinite;` : ''}
+        }
+      </style>
+
+      <ha-card>
+        ${this._config.title ? `<div class="card-header">${this._config.title}</div>` : ''}
+        <div class="svg-container">
+          <svg viewBox="0 0 700 300">
+            <!-- UPPER DUCT: Extract -> Exhaust -->
+            <path d="M 570 105 L 130 105" stroke="#03a9f4" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.8" />
+            <polygon points="120,105 135,97 135,113" fill="#03a9f4" />
+
+            <!-- LOWER DUCT: Outdoor -> Supply -->
+            <path d="M 130 195 L 570 195" stroke="#ff7043" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.8" />
+            <polygon points="580,195 565,187 565,203" fill="#ff7043" />
+
+            <!-- MAIN CASING -->
+            <rect x="195" y="60" width="310" height="180" rx="4" class="wireframe" stroke-width="1.8" stroke-dasharray="5,4" />
+
+            <!-- ZONE LABELS -->
+            <text x="130" y="155" text-anchor="middle" class="txt-label">OUTDOOR</text>
+            <text x="570" y="155" text-anchor="middle" class="txt-label">ROOM</text>
+
+            <!-- OUTDOOR AIR FILTER -->
+            <rect x="215" y="170" width="50" height="50" class="box-component" />
+            <polygon points="220,175 260,195 220,215" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <polygon points="220,185 240,195 220,205" fill="none" stroke="currentColor" stroke-width="1.5" />
+
+            <!-- EXHAUST FAN -->
+            <rect x="215" y="80" width="50" height="50" class="box-component" />
+            <g class="fan-exhaust">
+              <circle cx="240" cy="105" r="21" fill="none" stroke="currentColor" stroke-width="1.5" />
+              <circle cx="240" cy="105" r="4" fill="${fanExtract > 0 ? '#ff9800' : 'currentColor'}" />
+              <path d="M 240 105 Q 248 93 240 86 Q 232 93 240 105" fill="${fanExtract > 0 ? '#ff9800' : 'currentColor'}" />
+              <path d="M 240 105 Q 252 113 259 105 Q 252 97 240 105" fill="${fanExtract > 0 ? '#ff9800' : 'currentColor'}" />
+              <path d="M 240 105 Q 232 117 240 124 Q 248 117 240 105" fill="${fanExtract > 0 ? '#ff9800' : 'currentColor'}" />
+              <path d="M 240 105 Q 228 97 221 105 Q 228 113 240 105" fill="${fanExtract > 0 ? '#ff9800' : 'currentColor'}" />
+            </g>
+            ${this._config.fan_extract ? `<text x="240" y="73" text-anchor="middle" class="txt-val">${fanExtract.toFixed(1)}%</text>` : ''}
+
+            <!-- ROTARY HEAT EXCHANGER -->
+            <circle cx="350" cy="150" r="44" class="box-component" stroke-width="2" />
+            <g class="rotor-spin">
+              <circle cx="350" cy="150" r="40" fill="none" stroke="${rotorLevel > 0 ? '#4caf50' : 'currentColor'}" stroke-width="3" stroke-dasharray="24,14" />
+              <path d="M 330 150 A 20 20 0 0 1 370 150" fill="none" stroke="${rotorLevel > 0 ? '#4caf50' : 'currentColor'}" stroke-width="2.5" />
+              <path d="M 370 150 A 20 20 0 0 1 330 150" fill="none" stroke="${rotorLevel > 0 ? '#4caf50' : 'currentColor'}" stroke-width="2.5" />
+            </g>
+            ${this._config.rotor ? `<text x="350" y="52" text-anchor="middle" class="txt-val">Rotor: ${rotorLevel.toFixed(1)}%</text>` : ''}
+            ${this._config.efficiency && eff !== null ? `<text x="350" y="258" text-anchor="middle" class="txt-val" style="fill:#4caf50;">Eff: ${eff}</text>` : ''}
+
+            <!-- EXTRACT AIR FILTER -->
+            <rect x="435" y="80" width="50" height="50" class="box-component" />
+            <polygon points="480,85 440,105 480,125" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <polygon points="480,95 460,105 480,115" fill="none" stroke="currentColor" stroke-width="1.5" />
+
+            <!-- SUPPLY FAN -->
+            <rect x="435" y="170" width="50" height="50" class="box-component" />
+            <g class="fan-supply">
+              <circle cx="460" cy="195" r="21" fill="none" stroke="currentColor" stroke-width="1.5" />
+              <circle cx="460" cy="195" r="4" fill="${fanSupply > 0 ? '#03a9f4' : 'currentColor'}" />
+              <path d="M 460 195 Q 468 183 460 176 Q 452 183 460 195" fill="${fanSupply > 0 ? '#03a9f4' : 'currentColor'}" />
+              <path d="M 460 195 Q 472 203 479 195 Q 472 187 460 195" fill="${fanSupply > 0 ? '#03a9f4' : 'currentColor'}" />
+              <path d="M 460 195 Q 452 207 460 214 Q 468 207 460 195" fill="${fanSupply > 0 ? '#03a9f4' : 'currentColor'}" />
+              <path d="M 460 195 Q 448 187 441 195 Q 448 203 460 195" fill="${fanSupply > 0 ? '#03a9f4' : 'currentColor'}" />
+            </g>
+            ${this._config.fan_supply ? `<text x="460" y="235" text-anchor="middle" class="txt-val">${fanSupply.toFixed(1)}%</text>` : ''}
+
+            <!-- POST-HEATER -->
+            <rect x="500" y="175" width="36" height="40" class="box-component" />
+            <line x1="500" y1="175" x2="536" y2="215" stroke="currentColor" stroke-width="1" />
+            <text x="510" y="190" font-size="11" font-weight="bold" fill="currentColor">-</text>
+            <text x="522" y="208" font-size="11" font-weight="bold" fill="currentColor">+</text>
+            ${this._config.heater && heaterLevel > 0 ? `
+              <circle cx="518" cy="165" r="4" fill="#f44336" />
+              <text x="518" y="155" text-anchor="middle" font-size="10" font-weight="bold" fill="#f44336">${heaterLevel.toFixed(0)}%</text>
+            ` : ''}
+
+            <!-- SENSOR READINGS -->
+            <!-- Top Left: Exhaust Air -->
+            ${this._config.t_exhaust ? `<text x="25" y="80" class="txt-title c-exhaust">Exhaust: ${tExhaust !== null ? `${tExhaust} °C` : '--'}</text>` : ''}
+
+            <!-- Bottom Left: Outdoor Air -->
+            ${this._config.t_outdoor ? `<text x="25" y="215" class="txt-title c-outdoor">Outdoor: ${tOutdoor !== null ? `${tOutdoor} °C` : '--'}</text>` : ''}
+
+            <!-- Top Right: Extract Air -->
+            ${this._config.t_extract ? `<text x="675" y="55" text-anchor="end" class="txt-title c-extract">Extract: ${tExtract !== null ? `${tExtract} °C` : '--'}</text>` : ''}
+            ${this._config.set_extract && setExtract !== null ? `<text x="675" y="73" text-anchor="end" class="txt-sub">Set: ${setExtract} °C</text>` : ''}
+            ${this._config.flow_extract && flowExtract !== null ? `<text x="675" y="90" text-anchor="end" class="txt-sub">${flowExtract} m³/h</text>` : ''}
+            ${this._config.aqi && aqi !== null ? `<text x="675" y="107" text-anchor="end" class="txt-sub">AQI: ${aqi}</text>` : ''}
+
+            <!-- Bottom Right: Supply Air -->
+            ${this._config.t_supply ? `<text x="675" y="200" text-anchor="end" class="txt-title c-supply">Supply: ${tSupply !== null ? `${tSupply} °C` : '--'}</text>` : ''}
+            ${this._config.set_supply && setSupply !== null ? `<text x="675" y="218" text-anchor="end" class="txt-sub">Set: ${setSupply} °C</text>` : ''}
+            ${this._config.flow_supply && flowSupply !== null ? `<text x="675" y="235" text-anchor="end" class="txt-sub">${flowSupply} m³/h</text>` : ''}
+          </svg>
+        </div>
+      </ha-card>
+    `;
+  }
+
+  getCardSize() {
+    return 4;
+  }
+}
+
+customElements.define('komfovent-card', KomfoventCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: 'komfovent-card',
+  name: 'Komfovent VMC Card',
+  description: 'Dynamic SVG schematic card for Komfovent C5 AHU with configurable entities'
+});
+```
+
+### Step 2: Register the Lovelace Resource
+
+1. In Home Assistant, navigate to **Settings > Dashboards**.
+2. Click the three dots (top right) and select **Resources**.
+3. Click **Add Resource** (bottom right).
+4. Enter:
+   * **URL:** `/local/komfovent-card.js`
+   * **Resource Type:** `JavaScript Module`
+5. Click **Create**, then hard-refresh your browser (`Ctrl + F5` or `Cmd + Shift + R`).
+
+---
+
+## 2. Dashboard YAML Configuration
+
+Add the card to any Lovelace view. You can customize the entity IDs to match your setup:
+
+```yaml
+type: vertical-stack
+cards:
+  - type: custom:komfovent-card
+    title: Komfovent AHU
+    # Temperatures
+    t_outdoor: sensor.komfovent_outdoor_temperature
+    t_supply: sensor.komfovent_supply_temperature
+    t_extract: sensor.komfovent_extract_temperature
+    t_exhaust: sensor.komfovent_exhaust_temperature
+    # Setpoints
+    set_supply: sensor.komfovent_supply_temperature_setpoint
+    set_extract: sensor.komfovent_extract_temperature_setpoint
+    # Airflow
+    flow_supply: sensor.komfovent_supply_airflow
+    flow_extract: sensor.komfovent_extract_airflow
+    # Fans
+    fan_supply: sensor.komfovent_supply_fan_level
+    fan_extract: sensor.komfovent_extract_fan_level
+    # Heat Exchanger
+    rotor: sensor.komfovent_heat_exchanger_level
+    efficiency: sensor.komfovent_heat_exchanger_efficiency
+    # Auxiliaries
+    heater: sensor.komfovent_electric_heater_level
+    aqi: sensor.komfovent_air_quality_level
+
+  - type: entities
+    title: AHU Operations & Controls
+    show_header_toggle: false
+    entities:
+      - entity: switch.komfovent_ahu_power
+        name: Unit Power
+        icon: mdi:power
+      - entity: select.komfovent_operation_mode
+        name: Operating Mode
+        icon: mdi:tune-vertical
+      - entity: select.komfovent_temperature_control_mode
+        name: Temperature Control
+        icon: mdi:thermometer-auto
+      - type: divider
+      - entity: sensor.komfovent_active_alarms
+        name: Active Alarms
+        icon: mdi:alert-circle-outline
+```
+
+---
+
+## 3. Configuration Reference
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `title` | string | Optional | Header title shown at top of the card |
+| `t_outdoor` | entity_id | Optional | Outdoor air temperature intake (°C) |
+| `t_supply` | entity_id | Optional | Supply air temperature into rooms (°C) |
+| `t_extract` | entity_id | Optional | Extract air temperature from rooms (°C) |
+| `t_exhaust` | entity_id | Optional | Exhaust air temperature blown outside (°C) |
+| `set_supply` | entity_id | Optional | Supply temperature setpoint (°C) |
+| `set_extract` | entity_id | Optional | Extract temperature setpoint (°C) |
+| `flow_supply`| entity_id | Optional | Supply airflow rate (m³/h) |
+| `flow_extract`| entity_id | Optional | Extract airflow rate (m³/h) |
+| `fan_supply` | entity_id | Optional | Supply fan speed percentage (0–100%) |
+| `fan_extract`| entity_id | Optional | Extract fan speed percentage (0–100%) |
+| `rotor` | entity_id | Optional | Rotary exchanger speed percentage (0–100%) |
+| `efficiency` | entity_id | Optional | Heat recovery efficiency percentage (%) |
+| `heater` | entity_id | Optional | Electric/water heater level percentage (%) |
+| `aqi` | entity_id | Optional | Air Quality Index / VOC sensor reading |
