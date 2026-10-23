@@ -1,0 +1,176 @@
+{
+  "title": "Komfovent C5",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connetti a Komfovent",
+        "data": {
+          "host": "Host (o IP)",
+          "port": "Porta"
+        }
+      }
+    },
+    "error": {
+      "connect_failed": "Connessione non riuscita"
+    }
+  },
+  "entity": {
+    "select": {
+      "op_mode": {
+        "name": "Modalità operativa",
+        "state": {
+          "UNKNOWN": "Sconosciuto",
+          "COMFORT1": "Comfort 1",
+          "COMFORT2": "Comfort 2",
+          "ECONOMY1": "Economy 1",
+          "ECONOMY2": "Economy 2",
+          "SPECIAL": "Speciale",
+          "PROGRAM": "Programma"
+        }
+      },
+      "flow_control_mode": {
+        "name": "Modalità di controllo della portata",
+        "state": {
+          "CAV": "Portata d'aria costante (CAV)",
+          "VAV": "Portata d'aria variabile (VAV)",
+          "DCV": "Ventilazione controllata a richiesta (DCV)"
+        }
+      },
+      "temperature_control_mode": {
+        "name": "Modalità di controllo della temperatura",
+        "state": {
+          "SUPPLY": "Mandata",
+          "EXTRACT": "Ripresa",
+          "ROOM": "Ambiente",
+          "BALANCE": "Bilanciamento"
+        }
+      }
+    },
+    "sensor": {
+      "active_alarm": {
+        "name": "Allarme attivo {position}",
+        "state": {
+          "UNKNOWN": "Sconosciuto",
+          "CHANGE_EXTRACT_AIR_FILTER": "Sostituire filtro aria di ripresa",
+          "CHANGE_OUTDOOR_AIR_FILTER": "Sostituire filtro aria esterna",
+          "COMPRESSOR_FAILURE": "Guasto compressore",
+          "COMPRESSOR_OFF_AIRFLOW": "Pompa di calore arrestata per flusso d'aria insufficiente",
+          "COMPRESSOR_OFF_MALFUNCTION": "La pompa di calore non funziona o presenta un malfunzionamento",
+          "COMPRESSOR_OFF_TEMPERATURE": "Compressore spento",
+          "ELECTRIC_HEATER_OFF": "Riscaldatore elettrico spento",
+          "EVAPORATOR_ICING": "Ghiaccio sull'evaporatore",
+          "HIGH_PRESSURE_ON_COMPRESSOR": "Alta pressione sul compressore",
+          "LOW_EXTRACT_AIRFLOW": "Flusso d'aria di ripresa basso",
+          "LOW_HEAT_EXCHANGER_EFFICIENCY": "Bassa efficienza dello scambiatore di calore",
+          "LOW_PRESSURE_ON_COMPRESSOR": "Bassa pressione sul compressore",
+          "LOW_SUPPLY_AIRFLOW": "Flusso d'aria di mandata basso",
+          "SERVICE_MODE": "Modalità manutenzione",
+          "SERVICE_TIME": "Intervallo manutenzione scaduto",
+          "VAV_CALIBRATION_FAIL": "Calibrazione VAV non riuscita",
+          "WATER_PUMP_OR_COIL_ALARM": "Allarme pompa dell'acqua / batteria"
+        }
+      },
+      "active_alarms": {
+        "name": "Allarmi attivi"
+      },
+      "alarms_in_history": {
+        "name": "Storico allarmi"
+      },
+      "active_mode_extract_flow": {
+        "name": "Flusso ripresa in modalità attiva"
+      },
+      "active_mode_supply_flow": {
+        "name": "Flusso mandata in modalità attiva"
+      },
+      "active_mode_temperature_setpoint": {
+        "name": "Punto di regolazione temperatura modalità attiva"
+      },
+      "dx_level": {
+        "name": "Livello DX"
+      },
+      "electrical_heater_level": {
+        "name": "Livello riscaldatore elettrico"
+      },
+      "exhaust_temperature": {
+        "name": "Temperatura aria espulsa"
+      },
+      "extract_airflow_actual": {
+        "name": "Flusso aria di ripresa"
+      },
+      "extract_airflow_fan_level": {
+        "name": "Livello ventilatore aria di ripresa"
+      },
+      "extract_airflow_setpoint": {
+        "name": "Punto di regolazione flusso aria di ripresa"
+      },
+      "extract_temperature_actual": {
+        "name": "Temperatura aria di ripresa"
+      },
+      "extract_temperature_setpoint": {
+        "name": "Punto di regolazione temperatura ripresa"
+      },
+      "heat_exchanger_efficiency": {
+        "name": "Efficienza scambiatore di calore"
+      },
+      "heat_exchanger_level": {
+        "name": "Livello scambiatore di calore"
+      },
+      "heatpump_level": {
+        "name": "Livello pompa di calore"
+      },
+      "internal_supply_temperature": {
+        "name": "Temperatura mandata interna"
+      },
+      "nominal_exhaust_pressure": {
+        "name": "Pressione nominale aria espulsa"
+      },
+      "nominal_supply_pressure": {
+        "name": "Pressione nominale aria di mandata"
+      },
+      "outdoor_temperature": {
+        "name": "Temperatura aria esterna"
+      },
+      "return_water_temperature": {
+        "name": "Temperatura acqua di ritorno"
+      },
+      "supply_airflow_actual": {
+        "name": "Flusso aria di mandata"
+      },
+      "supply_airflow_fan_level": {
+        "name": "Livello ventilatore aria di mandata"
+      },
+      "supply_airflow_setpoint": {
+        "name": "Punto di regolazione flusso aria di mandata"
+      },
+      "supply_temperature_actual": {
+        "name": "Temperatura aria di mandata"
+      },
+      "supply_temperature_setpoint": {
+        "name": "Punto di regolazione temperatura mandata"
+      },
+      "vav_sensors_range": {
+        "name": "Intervallo sensori VAV"
+      },
+      "water_cooler_level": {
+        "name": "Livello batteria di raffreddamento ad acqua"
+      },
+      "water_heater_level": {
+        "name": "Livello batteria di riscaldamento ad acqua"
+      },
+      "air_quality_sensor_type": {
+        "name": "Tipo di sensore qualità dell'aria"
+      },
+      "air_quality_level": {
+        "name": "Livello qualità dell'aria"
+      }
+    },
+    "switch": {
+      "ahu_control": {
+        "name": "Controllo UTA (AHU)"
+      },
+      "ocv_control": {
+        "name": "Controllo OCV"
+      }
+    }
+  }
+}
