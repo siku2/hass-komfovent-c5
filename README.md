@@ -30,3 +30,5 @@ If you would like to use the integration in another language, you can help out b
 If your desired language isn't available there, just open an issue to request it.
 
 You can also just do the translations manually in [custom_components/komfovent_c5/translations/](./custom_components/komfovent_c5/translations/) and open a pull request with the changes.
+
+For dashboard example you can use [lovelace_dashboard.md](./lovelace_dashboard.md)
